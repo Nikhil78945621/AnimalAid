@@ -1,0 +1,84 @@
+/* Signup Page Styles */
+.signupcontainer {
+  max-width: 440px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.signupcontainer h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+  font-size: 1.7rem;
+}
+
+.signupcontainer form {
+  display: flex;
+  flex-direction: column;
+ 
+}
+
+.signupcontainer .form-row {
+  margin-bottom: 0.5rem; /* Controlled spacing between fields */
+}
+
+.signupcontainer label {
+  display: block;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem; /* Tight label spacing */
+}
+
+.signupcontainer input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.signupcontainer input:focus {
+  border-color: #48bb78;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(72, 187, 120, 0.1);
+}
+
+.signupcontainer button[type="submit"] {
+  background: #48bb78;
+  color: white;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-top: 0.8rem;
+  transition: background 0.2s ease;
+}
+
+.signupcontainer button[type="submit"]:hover {
+  background: #38a169;
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 1.2rem;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.signup-link a {
+  color: #48bb78;
+  font-weight: 500;
+  margin-left: 0.3rem;
+}
+
+@media (max-width: 480px) {
+  .signupcontainer {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
