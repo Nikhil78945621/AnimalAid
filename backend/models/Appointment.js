@@ -37,6 +37,18 @@ const appointmentSchema = new mongoose.Schema({
       max: 5,
     },
     comment: String,
+    payment: {
+      amount: {
+        type: Number,
+        required: true,
+        default: 0, // Default value for amount
+      },
+      status: {
+        type: String,
+        enum: ["pending", "paid"],
+        default: "pending", // Default value for status
+      },
+    },
   },
 });
 

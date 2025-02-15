@@ -22,6 +22,14 @@ const userSchema = new mongoose.Schema({
   phone: String,
   address: String,
   clinic: String,
+  fee: {
+    type: Number,
+    required: function () {
+      return this.role === "vet";
+    },
+    default: 0,
+    min: [0, "Fee cannot be negative"],
+  },
 });
 
 const User = mongoose.model("User", userSchema);

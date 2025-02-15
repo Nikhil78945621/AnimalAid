@@ -10,6 +10,8 @@ const CreateAppointment = () => {
   const [time, setTime] = useState("");
   const [pet, setPet] = useState("");
   const [notes, setNotes] = useState("");
+  const [address, setAddress] = useState("");
+  const [vetFee, setVetFee] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,6 +36,13 @@ const CreateAppointment = () => {
     fetchVets();
   }, []);
 
+  const handleVetChange = (e) => {
+    const selectedVetId = e.target.value;
+    const selectedVet = vets.find((vet) => vet._id === selectedVetId);
+    setSelectedVet(selectedVetId);
+    setVetFee(selectedVet ? selectedVet.fee : 0);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -47,6 +56,7 @@ const CreateAppointment = () => {
           pet,
           dateTime,
           notes,
+          address,
         },
         {
           headers: {
@@ -68,15 +78,11 @@ const CreateAppointment = () => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Select Veterinarian:</label>
-          <select
-            value={selectedVet}
-            onChange={(e) => setSelectedVet(e.target.value)}
-            required
-          >
+          <select value={selectedVet} onChange={handleVetChange} required>
             <option value="">Select a vet</option>
             {vets.map((vet) => (
               <option key={vet._id} value={vet._id}>
-                {vet.name} ({vet.speciality})
+                {vet.name} ({vet.speciality}) - Fee: ${vet.fee}
               </option>
             ))}
           </select>
@@ -107,6 +113,19 @@ const CreateAppointment = () => {
             onChange={(e) => setPet(e.target.value)}
             required
           />
+        </div>
+        <div className="form-group">
+          <label>Address:</label>
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Vet Fee:</label>
+          <input type="number" value={vetFee} readOnly />
         </div>
         <div className="form-group">
           <label>Notes:</label>

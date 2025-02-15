@@ -31,7 +31,7 @@ const UserAppointments = () => {
     };
 
     fetchAppointments();
-  }, [location.state?.refresh]); // Refresh when location state changes
+  }, [location.state?.refresh]);
 
   const handleCancel = async (id) => {
     try {
@@ -71,6 +71,24 @@ const UserAppointments = () => {
     }
   };
 
+  const handlePayment = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.patch(
+        `http://localhost:8084/api/appointments/${id}/payment`,
+        { status: "paid" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAppointments(
+        appointments.map((appt) =>
+          appt._id === id ? response.data.data : appt
+        )
+      );
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+    }
+  };
+
   if (loading) return <div>Loading appointments...</div>;
 
   return (
@@ -82,24 +100,35 @@ const UserAppointments = () => {
         </Link>
       </div>
       <div className="appointments-list">
-        {appointments.map((appt) => (
-          <div key={appt._id} className="appointment-card">
-            <div className="appointment-info">
-              <p>Date: {new Date(appt.dateTime).toLocaleString()}</p>
-              <p>Pet: {appt.pet}</p>
-              <p>Status: {appt.status}</p>
-              <p>Vet: {appt.veterinarian?.name}</p>
+        {appointments.map((appt) => {
+          const payment = appt.payment || { amount: 0, status: "pending" }; // Default value
+          return (
+            <div key={appt._id} className="appointment-card">
+              <div className="appointment-info">
+                <p>Date: {new Date(appt.dateTime).toLocaleString()}</p>
+                <p>Pet: {appt.pet}</p>
+                <p>Status: {appt.status}</p>
+                <p>Vet: {appt.veterinarian?.name}</p>
+                <p>Address: {appt.address}</p>
+                <p>Fee: ${payment.amount}</p>
+                <p>Payment Status: {payment.status}</p>
+              </div>
+              <div className="appointment-actions">
+                {["pending", "confirmed"].includes(appt.status) && (
+                  <button onClick={() => handleCancel(appt._id)}>Cancel</button>
+                )}
+                {appt.status === "completed" && !appt.feedback && (
+                  <FeedbackForm appointment={appt} onSubmit={handleFeedback} />
+                )}
+                {payment.status === "pending" && (
+                  <button onClick={() => handlePayment(appt._id)}>
+                    Pay Now
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="appointment-actions">
-              {["pending", "confirmed"].includes(appt.status) && (
-                <button onClick={() => handleCancel(appt._id)}>Cancel</button>
-              )}
-              {appt.status === "completed" && !appt.feedback && (
-                <FeedbackForm appointment={appt} onSubmit={handleFeedback} />
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

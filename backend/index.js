@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const authRouter = require("./routes/authRoute");
 const appointmentRouter = require("./routes/appointmentRoutes");
-
 const app = express();
 
 // 1) Middlewares

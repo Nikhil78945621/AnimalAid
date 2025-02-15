@@ -77,7 +77,7 @@ exports.getAvailableSlots = async (req, res, next) => {
 // Create new appointment
 exports.createAppointment = async (req, res, next) => {
   try {
-    const { veterinarian, pet, dateTime, notes } = req.body;
+    const { veterinarian, pet, dateTime, notes, address } = req.body;
 
     if (req.user.role !== "user") {
       return next(new createError("Only users can create appointments", 403));
@@ -92,12 +92,22 @@ exports.createAppointment = async (req, res, next) => {
       return next(new createError("Time slot already booked", 400));
     }
 
+    const vet = await User.findById(veterinarian);
+    if (!vet || vet.role !== "vet") {
+      return next(new createError("Invalid veterinarian", 400));
+    }
+
     const appointment = await Appointment.create({
       petOwner: req.user._id,
       veterinarian,
       pet,
       dateTime,
       notes,
+      address,
+      payment: {
+        amount: vet.fee, // Use the vet's fee
+        status: "pending", // Default status
+      },
     });
 
     res.status(201).json({
@@ -116,7 +126,7 @@ exports.getUserAppointments = async (req, res, next) => {
     }
 
     const appointments = await Appointment.find({ petOwner: req.user._id })
-      .populate("veterinarian", "name")
+      .populate("veterinarian", "name fee") // Include fee in the response
       .sort({ dateTime: 1 });
 
     res.status(200).json({
@@ -149,7 +159,7 @@ exports.getVetAppointments = async (req, res, next) => {
 
 exports.getAllVets = async (req, res, next) => {
   try {
-    const vets = await User.find({ role: "vet" }).select("name speciality");
+    const vets = await User.find({ role: "vet" }).select("name speciality fee");
     if (!vets.length) {
       return res.status(404).json({
         status: "fail",
