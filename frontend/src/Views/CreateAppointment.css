@@ -1,0 +1,128 @@
+/* Ensure styles apply only to the Create Appointment page */
+.create-appointment-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Title Styling */
+.create-appointment-container h2 {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Form + Image Layout */
+.appointment-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  gap: 30px; /* Adds spacing between form and image */
+}
+
+/* Form Styling */
+.appointment-form {
+  flex: 1;
+  padding: 20px;
+  min-width: 50%; /* Ensures the form does not shrink too much */
+}
+
+/* Labels and Inputs */
+.appointment-form .form-group {
+  margin-bottom: 15px;
+}
+
+.appointment-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.appointment-form input,
+.appointment-form select,
+.appointment-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.appointment-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Scoped Button Styling (Only for Create Appointment) */
+.create-appointment-btn {
+  width: 100%;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.create-appointment-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Image Section */
+.appointment-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 50%; /* Ensures image takes proper space */
+}
+
+/* Ensure image doesn't shrink or collapse */
+.appointment-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+  max-height: 400px; /* Prevents image from being too large */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .appointment-content {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .appointment-form {
+    width: 100%;
+  }
+
+  .appointment-image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .appointment-image img {
+    width: 100%;
+    max-height: 250px;
+  }
+}

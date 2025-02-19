@@ -74,68 +74,87 @@ const CreateAppointment = () => {
 
   return (
     <div className="create-appointment-container">
-      <h2>Create New Appointment</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Select Veterinarian:</label>
-          <select value={selectedVet} onChange={handleVetChange} required>
-            <option value="">Select a vet</option>
-            {vets.map((vet) => (
-              <option key={vet._id} value={vet._id}>
-                {vet.name} ({vet.speciality}) - Fee: ${vet.fee}
-              </option>
-            ))}
-          </select>
+      <h2>Book your appointment now</h2>
+
+      <div className="appointment-content">
+        {/* Form Section */}
+        <div className="appointment-form">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Select Veterinarian:</label>
+              <select value={selectedVet} onChange={handleVetChange} required>
+                <option value="">Select a vet</option>
+                {vets.map((vet) => (
+                  <option key={vet._id} value={vet._id}>
+                    {vet.name} ({vet.speciality}) - Fee: ${vet.fee}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Date:</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Time:</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Pet Name:</label>
+              <input
+                type="text"
+                value={pet}
+                onChange={(e) => setPet(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Address:</label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Notes:</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+
+            {error && <p className="error-message">{error}</p>}
+            <button type="submit" disabled={loading}>
+              {loading ? "Creating..." : "Create Appointment"}
+            </button>
+          </form>
         </div>
-        <div className="form-group">
-          <label>Date:</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
+
+        {/* Image Section */}
+        <div className="appointment-image">
+          <img
+            src="https://img.freepik.com/free-vector/pet-hospital-concept-illustration_114360-25803.jpg?semt=ais_hybrid"
+            alt="vet and pet"
           />
         </div>
-        <div className="form-group">
-          <label>Time:</label>
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Pet Name:</label>
-          <input
-            type="text"
-            value={pet}
-            onChange={(e) => setPet(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Address:</label>
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Vet Fee:</label>
-          <input type="number" value={vetFee} readOnly />
-        </div>
-        <div className="form-group">
-          <label>Notes:</label>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-        </div>
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Appointment"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
