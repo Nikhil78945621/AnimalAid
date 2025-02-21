@@ -1,0 +1,104 @@
+/* Ensure styles are scoped only to .vet-dashboard */
+.vet-dashboard {
+  max-width: 1200px;
+  margin: 80px auto 20px; /* Add margin-top to prevent navbar overlap */
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats Section */
+.vet-dashboard .dashboard-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.vet-dashboard .stat-card {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.vet-dashboard .stat-card h3 {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.vet-dashboard .stat-card p {
+  font-size: 22px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Profile Section (Scoped) */
+.vet-dashboard .vet-profile-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.vet-dashboard .vet-profile-section h2 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.vet-dashboard .vet-form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.vet-dashboard .vet-form-row label {
+  flex: 1;
+  font-size: 14px;
+  color: #555;
+}
+
+.vet-dashboard .vet-form-row input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Update Button */
+.vet-dashboard .update-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease-in-out;
+}
+
+.vet-dashboard .update-btn:hover {
+  background-color: #218838;
+}
+
+/* Appointments Section */
+.vet-dashboard .appointments-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Make sure styles only affect this component */
+.vet-dashboard * {
+  box-sizing: border-box;
+}

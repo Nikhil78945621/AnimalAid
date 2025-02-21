@@ -1,14 +1,15 @@
 /* Ensure styles apply only to the Create Appointment page */
 .create-appointment-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 100px 20px 40px; /* Added padding-top to account for the navbar */
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #f8f9fa;
   min-height: 100vh;
+  box-sizing: border-box; /* Ensures padding is included in the height */
 }
 
 /* Title Styling */

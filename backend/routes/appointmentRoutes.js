@@ -55,4 +55,10 @@ router.patch(
 );
 
 router.get("/vets", checkRole("user"), appointmentController.getAllVets);
+router.get(
+  "/vet/stats",
+  protect,
+  checkRole("vet"),
+  appointmentController.getVetStats
+);
 module.exports = router;

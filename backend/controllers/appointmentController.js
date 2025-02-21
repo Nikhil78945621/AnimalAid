@@ -137,14 +137,51 @@ exports.getUserAppointments = async (req, res, next) => {
     next(error);
   }
 };
-// Get vet's appointments
+
+exports.getVetStats = async (req, res, next) => {
+  try {
+    const vetId = req.user._id;
+
+    // Count all appointments regardless of status
+    const totalAppointments = await Appointment.countDocuments({
+      veterinarian: vetId,
+    });
+
+    // Calculate total income from completed appointments only
+    const totalIncomeResult = await Appointment.aggregate([
+      {
+        $match: {
+          veterinarian: vetId,
+          status: "completed",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalIncome: { $sum: "$payment.amount" },
+        },
+      },
+    ]);
+
+    const totalIncome = totalIncomeResult[0]?.totalIncome || 0;
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        totalAppointments,
+        totalIncome,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get vet appointments
 exports.getVetAppointments = async (req, res, next) => {
   try {
-    if (req.user.role !== "vet") {
-      return next(new createError("Access restricted to vets only", 403));
-    }
-
-    const appointments = await Appointment.find({ veterinarian: req.user._id })
+    const vetId = req.user._id;
+    const appointments = await Appointment.find({ veterinarian: vetId })
       .populate("petOwner", "name email")
       .sort({ dateTime: 1 });
 

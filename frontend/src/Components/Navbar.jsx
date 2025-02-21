@@ -23,7 +23,7 @@ const Navbar = () => {
         </li>
         {isLoggedIn && (
           <li>
-            <Link to={role === "vet" ? "/vet-appointments" : "/appointments"}>
+            <Link to={role === "vet" ? "/vet-dashboard" : "/appointments"}>
               Appointments
             </Link>
           </li>

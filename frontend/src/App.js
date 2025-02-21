@@ -13,6 +13,7 @@ import Navbar from "./Components/Navbar";
 import UserAppointments from "./Components/UserAppointment";
 import VetAppointments from "./Components/VetAppointment";
 import CreateAppointment from "./Components/CreateAppointment";
+import VetDashboard from "./Components/VetDashboard";
 import { jwtDecode } from "jwt-decode";
 import "./App.css";
 
@@ -86,6 +87,21 @@ const App = () => {
                   <CreateAppointment />
                 ) : (
                   <VetAppointments />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/vet-dashboard"
+            element={
+              isAuthenticated ? (
+                userRole === "user" ? (
+                  <CreateAppointment />
+                ) : (
+                  <VetDashboard />
                 )
               ) : (
                 <Navigate to="/login" />
