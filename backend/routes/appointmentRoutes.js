@@ -27,14 +27,16 @@ router.patch(
 );
 router.patch(
   "/:id/reschedule",
+  protect,
   checkRole("user"),
   appointmentController.rescheduleAppointment
 );
-router.patch(
-  "/:id/feedback",
-  checkRole("user"),
-  appointmentController.addFeedback
-);
+
+// router.patch(
+//   "/:id/feedback",
+//   checkRole("user"),
+//   appointmentController.addFeedback
+// );
 
 // Vet routes
 router.get(
@@ -61,4 +63,5 @@ router.get(
   checkRole("vet"),
   appointmentController.getVetStats
 );
+
 module.exports = router;

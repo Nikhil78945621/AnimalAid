@@ -1,23 +1,30 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 const authRouter = require("./routes/authRoute");
 const appointmentRouter = require("./routes/appointmentRoutes");
+const vetRoutes = require("./routes/VetRoutes"); // Ensure correct file path
+
 const app = express();
 
 // 1) Middlewares
-// index.js
 app.use(cors());
 app.use(express.json());
 
-// 2) Route
+// 2) Routes
 app.use("/api/auth", authRouter);
 app.use("/api/appointments", appointmentRouter);
-// 3) MongoDb connection
+app.use("/api/vet", vetRoutes); // Added vet routes
+
+// 3) MongoDB connection
 mongoose
-  .connect("mongodb://localhost:27017/authentication")
-  .then(() => console.log("connected to MongoDB!"))
-  .catch((error) => console.error("failed to connect to mongoDB:", error));
+  .connect("mongodb://localhost:27017/authentication", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected to MongoDB!"))
+  .catch((error) => console.error("Failed to connect to MongoDB:", error));
 
 // 4) Global Error Handler
 app.use((err, req, res, next) => {

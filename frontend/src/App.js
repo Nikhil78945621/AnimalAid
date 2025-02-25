@@ -16,6 +16,7 @@ import CreateAppointment from "./Components/CreateAppointment";
 import VetDashboard from "./Components/VetDashboard";
 import { jwtDecode } from "jwt-decode";
 import "./App.css";
+import About from "./Components/About";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,6 +43,7 @@ const App = () => {
         <Navbar isAuthenticated={isAuthenticated} userRole={userRole} />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/About" element={<About />} />
           <Route
             path="/login"
             element={<Login setIsAuthenticated={setIsAuthenticated} />}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import moment from "moment-timezone";
 import "./../Views/CreateAppointment.css";
 
 const CreateAppointment = () => {
@@ -14,8 +15,11 @@ const CreateAppointment = () => {
   const [vetFee, setVetFee] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [vetTimezone, setVetTimezone] = useState("UTC");
   const navigate = useNavigate();
 
+  // Fetch all vets
   useEffect(() => {
     const fetchVets = async () => {
       try {
@@ -36,19 +40,47 @@ const CreateAppointment = () => {
     fetchVets();
   }, []);
 
+  // Handle vet selection
   const handleVetChange = (e) => {
     const selectedVetId = e.target.value;
     const selectedVet = vets.find((vet) => vet._id === selectedVetId);
     setSelectedVet(selectedVetId);
     setVetFee(selectedVet ? selectedVet.fee : 0);
+    setDate(""); // Reset date when vet changes
+    setTime(""); // Reset time when vet changes
+    setAvailableSlots([]); // Reset available slots
   };
 
+  // Fetch available slots for the selected vet and date
+  const handleDateChange = async (e) => {
+    const selectedDate = e.target.value;
+    setDate(selectedDate);
+    if (selectedVet && selectedDate) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:8084/api/appointments/available?vetId=${selectedVet}&date=${selectedDate}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setAvailableSlots(response.data.slots);
+        setVetTimezone(response.data.timezone); // Set vet's timezone
+      } catch (err) {
+        setError("Failed to fetch available slots");
+      }
+    }
+  };
+
+  // Handle appointment submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const dateTime = new Date(`${date}T${time}`);
+      const dateTime = moment.tz(`${date}T${time}`, vetTimezone).utc().format();
       await axios.post(
         "http://localhost:8084/api/appointments",
         {
@@ -65,8 +97,16 @@ const CreateAppointment = () => {
         }
       );
       navigate("/appointments", { state: { refresh: true } });
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to create appointment");
+    } catch (error) {
+      if (
+        error.response?.data?.message === "This time slot is already booked"
+      ) {
+        alert("This time slot is already booked. Please choose another time.");
+      } else {
+        setError(
+          error.response?.data?.message || "Failed to create appointment"
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -97,19 +137,26 @@ const CreateAppointment = () => {
               <input
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={handleDateChange}
                 required
+                min={moment().format("YYYY-MM-DD")} // Disable past dates
               />
             </div>
 
             <div className="form-group">
               <label>Time:</label>
-              <input
-                type="time"
+              <select
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 required
-              />
+              >
+                <option value="">Select a time</option>
+                {availableSlots.map((slot) => (
+                  <option key={slot} value={moment(slot).format("HH:mm")}>
+                    {moment(slot).tz(vetTimezone).format("h:mm A")}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">

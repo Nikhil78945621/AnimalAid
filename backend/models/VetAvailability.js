@@ -15,6 +15,10 @@ const availabilitySchema = new mongoose.Schema({
       },
       start: String,
       end: String,
+      active: {
+        type: Boolean,
+        default: true,
+      },
     },
   ],
   blockedSlots: [
@@ -26,7 +30,12 @@ const availabilitySchema = new mongoose.Schema({
   ],
   appointmentDuration: {
     type: Number,
-    default: 30,
+    default: 60,
+  },
+  timezone: {
+    type: String,
+    required: true,
+    default: "UTC",
   },
 });
 

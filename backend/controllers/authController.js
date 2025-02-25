@@ -19,11 +19,9 @@ exports.signup = async (req, res, next) => {
     });
 
     const token = jwt.sign(
-      { _id: newUser._id, role: user.role },
+      { _id: newUser._id, role: newUser.role },
       "secretkey123",
-      {
-        expiresIn: "90d",
-      }
+      { expiresIn: "90d" }
     );
 
     res.status(201).json({

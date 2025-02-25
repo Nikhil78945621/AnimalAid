@@ -1,7 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./../Views/Home.css";
 
 const Home = () => {
+  const [news, setNews] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0); // Track visible news index
+  const itemsPerPage = 3; // Show 3 news articles per slide
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await axios.get(
+          "https://newsapi.org/v2/everything?q=veterinary+healthcare OR pet+healthcare OR livestock+health&apiKey=8f0e474baddf4180b88b130d5e0079a0"
+        );
+        setNews(response.data.articles);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
+  // Move to the next set of articles
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex + itemsPerPage < news.length ? prevIndex + itemsPerPage : 0
+    );
+  };
+
+  // Move to the previous set of articles
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex - itemsPerPage >= 0
+        ? prevIndex - itemsPerPage
+        : Math.max(0, news.length - itemsPerPage)
+    );
+  };
+
   return (
     <div className="home">
       {/* Hero Section */}
@@ -9,10 +45,7 @@ const Home = () => {
         <div className="hero-content">
           <h1>Welcome to Animal Healthcare</h1>
           <p>
-            Lorem ipsum dolor sit amet consectetur. Orcit fermentum posuere
-            elementum quam lectus. Venenatis mattis rhoncus sapien semper. Lorem
-            vivamus urna sit amet consectetur bibendum. Nisl facilisis ipsum est
-            et velit malesuada tempus.
+            Providing the best healthcare solutions for your pets and livestock.
           </p>
           <a href="#services" className="btn-primary">
             Learn More
@@ -26,29 +59,42 @@ const Home = () => {
       {/* News Section */}
       <section className="news-section">
         <h2>Latest News and Articles</h2>
-        <div className="news-cards">
-          {Array(3)
-            .fill(0)
-            .map((_, index) => (
-              <div className="news-card" key={index}>
-                <img src="a.jpg" /* Replace with news image */ alt="News" />
-                <h3>Breaking News</h3>
-                <p>
-                  A Synchrony study highlights the need for more client
-                  education.
-                </p>
-                <a href="#read-more" className="btn-secondary">
-                  Read More
-                </a>
-              </div>
-            ))}
-        </div>
-        {/* Pagination */}
-        <div className="pagination">
-          <span className="dot active"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
-        </div>
+        {news.length === 0 ? (
+          <p>Loading news...</p>
+        ) : (
+          <div className="news-carousel">
+            <button className="btn-prev" onClick={prevSlide}>
+              ◀ Prev
+            </button>
+
+            <div className="news-cards">
+              {news
+                .slice(currentIndex, currentIndex + itemsPerPage)
+                .map((article, index) => (
+                  <div className="news-card" key={index}>
+                    <img
+                      src={article.urlToImage || "fallback-image.jpg"}
+                      alt={article.title}
+                    />
+                    <h3>{article.title}</h3>
+                    <p>{article.description?.substring(0, 100)}...</p>
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                    >
+                      Read More
+                    </a>
+                  </div>
+                ))}
+            </div>
+
+            <button className="btn-next" onClick={nextSlide}>
+              Next ▶
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );
