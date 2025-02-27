@@ -64,4 +64,10 @@ router.get(
   appointmentController.getVetStats
 );
 
+router.get(
+  "/notifications",
+  protect,
+  appointmentController.getUserNotifications
+);
+
 module.exports = router;

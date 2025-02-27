@@ -374,27 +374,26 @@ exports.rescheduleAppointment = async (req, res, next) => {
   }
 };
 
-exports.blockSlot = async (req, res, next) => {
+// In your backend (appointmentController.js)
+exports.getUserNotifications = async (req, res, next) => {
   try {
-    const { start, end, reason } = req.body;
-    const vetAvailability = await VetAvailability.findOne({
-      vet: req.user._id,
+    const appointments = await Appointment.find(
+      { petOwner: req.user._id, "notifications.0": { $exists: true } },
+      { notifications: 1 }
+    ).sort({ "notifications.createdAt": -1 });
+
+    let notifications = [];
+    appointments.forEach((appt) => {
+      appt.notifications.forEach((notif) => {
+        notifications.push({
+          id: notif._id,
+          message: notif.message,
+          createdAt: notif.createdAt,
+        });
+      });
     });
 
-    // Convert to UTC
-    const utcStart = moment
-      .tz(start, vetAvailability.timezone)
-      .utc()
-      .toDate();
-    const utcEnd = moment
-      .tz(end, vetAvailability.timezone)
-      .utc()
-      .toDate();
-
-    vetAvailability.blockedSlots.push({ start: utcStart, end: utcEnd, reason });
-    await vetAvailability.save();
-
-    res.json(vetAvailability);
+    res.status(200).json({ status: "success", data: notifications });
   } catch (error) {
     next(error);
   }

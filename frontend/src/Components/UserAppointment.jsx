@@ -136,15 +136,6 @@ const UserAppointments = () => {
                 <p>Address: {appt.address}</p>
                 <p>Fee: ${payment.amount}</p>
                 <p>Payment Status: {payment.status}</p>
-
-                {/* Notifications Section */}
-                {appt.notifications?.map((notification, idx) => (
-                  <div key={idx} className="notification">
-                    <span className="notification-icon">!</span>
-                    <p>{notification.message}</p>
-                    <small>{moment(notification.createdAt).fromNow()}</small>
-                  </div>
-                ))}
               </div>
               <div className="appointment-actions">
                 {["pending", "confirmed"].includes(appt.status) && (
