@@ -15,7 +15,6 @@ import VetAppointments from "./Components/VetAppointment";
 import CreateAppointment from "./Components/CreateAppointment";
 import VetDashboard from "./Components/VetDashboard";
 import { jwtDecode } from "jwt-decode";
-import "./App.css";
 import About from "./Components/About";
 
 const App = () => {

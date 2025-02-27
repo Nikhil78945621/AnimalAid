@@ -50,6 +50,12 @@ const appointmentSchema = new mongoose.Schema({
       },
     },
   },
+  notifications: [
+    {
+      message: String,
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

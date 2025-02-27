@@ -30,24 +30,6 @@ const userSchema = new mongoose.Schema({
     default: 0,
     min: [0, "Fee cannot be negative"],
   },
-  notifications: [
-    {
-      type: {
-        type: String,
-        required: true,
-      },
-      message: String,
-      appointmentId: mongoose.Schema.Types.ObjectId,
-      read: {
-        type: Boolean,
-        default: false,
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
 });
 
 const User = mongoose.model("User", userSchema);

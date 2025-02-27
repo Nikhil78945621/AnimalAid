@@ -220,17 +220,14 @@ exports.getAllVets = async (req, res, next) => {
 };
 
 // Confirm appointment (vet)
+// controllers/appointmentController.js
 exports.confirmAppointment = async (req, res, next) => {
   try {
-    const appointment = await Appointment.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        veterinarian: req.user._id, // Ensure the vet can only confirm their own appointments
-        status: "pending", // Only pending appointments can be confirmed
-      },
-      { status: "confirmed" },
-      { new: true }
-    );
+    const appointment = await Appointment.findOne({
+      _id: req.params.id,
+      veterinarian: req.user._id,
+      status: "pending",
+    });
 
     if (!appointment) {
       return next(
@@ -238,10 +235,26 @@ exports.confirmAppointment = async (req, res, next) => {
       );
     }
 
-    res.status(200).json({
-      status: "success",
-      data: appointment,
+    // Get vet's timezone
+    const vetAvailability = await VetAvailability.findOne({
+      vet: req.user._id,
     });
+    const vetTimezone = vetAvailability?.timezone || "UTC";
+
+    // Format appointment time in vet's timezone
+    const formattedDate = moment(appointment.dateTime)
+      .tz(vetTimezone)
+      .format("MMMM Do YYYY, h:mm a");
+
+    // Add notification
+    appointment.notifications.push({
+      message: `Your appointment on ${formattedDate} has been confirmed!`,
+    });
+
+    appointment.status = "confirmed";
+    await appointment.save();
+
+    res.status(200).json(appointment);
   } catch (error) {
     next(error);
   }
@@ -369,8 +382,14 @@ exports.blockSlot = async (req, res, next) => {
     });
 
     // Convert to UTC
-    const utcStart = moment.tz(start, vetAvailability.timezone).utc().toDate();
-    const utcEnd = moment.tz(end, vetAvailability.timezone).utc().toDate();
+    const utcStart = moment
+      .tz(start, vetAvailability.timezone)
+      .utc()
+      .toDate();
+    const utcEnd = moment
+      .tz(end, vetAvailability.timezone)
+      .utc()
+      .toDate();
 
     vetAvailability.blockedSlots.push({ start: utcStart, end: utcEnd, reason });
     await vetAvailability.save();

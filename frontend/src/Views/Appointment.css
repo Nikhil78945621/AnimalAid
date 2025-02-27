@@ -46,3 +46,41 @@
   background: #4CAF50;
   color: white;
 }
+
+/* Reschedule Form */
+.reschedule-form {
+  margin-top: 10px;
+}
+
+.reschedule-form select {
+  padding: 8px;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+/* Notifications */
+.notification {
+  background: #e3f2fd;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  position: relative;
+}
+
+.notification-icon {
+  background: #2196f3;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.notification small {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+}
