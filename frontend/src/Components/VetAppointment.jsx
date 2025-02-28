@@ -69,7 +69,8 @@ const VetAppointments = ({ stats, setStats }) => {
           <div key={appt._id} className="appointment-card vet-card">
             <div className="appointment-info">
               <p>Date: {new Date(appt.dateTime).toLocaleString()}</p>
-              <p>Pet: {appt.pet}</p>
+              <p>Pet Type: {appt.pet}</p>
+              <p>Reason: {appt.notes || "No additional notes"}</p>
               <p>Owner: {appt.petOwner?.name}</p>
               <p>Status: {appt.status}</p>
             </div>

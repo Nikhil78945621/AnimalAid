@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import VetAppointments from "./VetAppointment"; // Ensure correct import
 import "./../Views/VetDashboard.css";
-import moment from "moment-timezone";
 
 const VetDashboard = () => {
   const [vetData, setVetData] = useState({

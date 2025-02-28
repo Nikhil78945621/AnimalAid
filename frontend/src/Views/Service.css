@@ -1,0 +1,104 @@
+/* Main container */
+.service-container {
+  text-align: center;
+  padding: 100px 20px;
+  background-color: #f0fdf4; /* Light green background */
+}
+
+/* Section titles */
+.section-title {
+  font-size: 28px;
+  color: #2d6a4f;
+  margin-bottom: 10px;
+}
+
+.section-subtitle {
+  font-size: 16px;
+  color: #5c8374;
+  margin-bottom: 30px;
+}
+
+/* Services grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Service card */
+.service-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Service icon */
+.service-icon {
+  font-size: 40px;
+  color: #40916c;
+  margin-bottom: 10px;
+}
+
+/* Service title */
+.service-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d6a4f;
+  margin-bottom: 5px;
+}
+
+/* Service description */
+.service-description {
+  font-size: 14px;
+  color: #5c8374;
+  margin-bottom: 15px;
+}
+
+/* Read More link */
+.read-more {
+  font-size: 14px;
+  text-decoration: none;
+  color: #40916c;
+  font-weight: bold;
+}
+
+.read-more:hover {
+  text-decoration: underline;
+}
+
+/* Appointment section */
+.appointment-section {
+  margin-top: 40px;
+  padding: 20px;
+  background: #d8f3dc;
+  border-radius: 10px;
+}
+
+.appointment-section h3 {
+  color: #2d6a4f;
+}
+
+.book-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #2d6a4f;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.book-btn:hover {
+  background-color: #1b4332;
+}

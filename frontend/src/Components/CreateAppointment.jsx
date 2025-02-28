@@ -9,7 +9,7 @@ const CreateAppointment = () => {
   const [selectedVet, setSelectedVet] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [pet, setPet] = useState("");
+  const [pet, setPet] = useState(""); // Renamed to hold pet type
   const [notes, setNotes] = useState("");
   const [address, setAddress] = useState("");
   const [vetFee, setVetFee] = useState(0);
@@ -18,6 +18,20 @@ const CreateAppointment = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [vetTimezone, setVetTimezone] = useState("UTC");
   const navigate = useNavigate();
+
+  // List of pet types
+  const petTypes = [
+    "Dog",
+    "Cat",
+    "Cow",
+    "Bird",
+    "Rabbit",
+    "Horse",
+    "Goat",
+    "Hamster",
+    "Turtle",
+    "Fish",
+  ];
 
   // Fetch all vets
   useEffect(() => {
@@ -46,9 +60,9 @@ const CreateAppointment = () => {
     const selectedVet = vets.find((vet) => vet._id === selectedVetId);
     setSelectedVet(selectedVetId);
     setVetFee(selectedVet ? selectedVet.fee : 0);
-    setDate(""); // Reset date when vet changes
-    setTime(""); // Reset time when vet changes
-    setAvailableSlots([]); // Reset available slots
+    setDate("");
+    setTime("");
+    setAvailableSlots([]);
   };
 
   // Fetch available slots for the selected vet and date
@@ -67,7 +81,7 @@ const CreateAppointment = () => {
           }
         );
         setAvailableSlots(response.data.slots);
-        setVetTimezone(response.data.timezone); // Set vet's timezone
+        setVetTimezone(response.data.timezone);
       } catch (err) {
         setError("Failed to fetch available slots");
       }
@@ -80,12 +94,15 @@ const CreateAppointment = () => {
     setLoading(true);
 
     try {
-      const dateTime = moment.tz(`${date}T${time}`, vetTimezone).utc().format();
+      const dateTime = moment
+        .tz(`${date}T${time}`, vetTimezone)
+        .utc()
+        .format();
       await axios.post(
         "http://localhost:8084/api/appointments",
         {
           veterinarian: selectedVet,
-          pet,
+          pet, // Holds selected pet type
           dateTime,
           notes,
           address,
@@ -139,7 +156,7 @@ const CreateAppointment = () => {
                 value={date}
                 onChange={handleDateChange}
                 required
-                min={moment().format("YYYY-MM-DD")} // Disable past dates
+                min={moment().format("YYYY-MM-DD")}
               />
             </div>
 
@@ -153,34 +170,32 @@ const CreateAppointment = () => {
                 <option value="">Select a time</option>
                 {availableSlots.map((slot) => (
                   <option key={slot} value={moment(slot).format("HH:mm")}>
-                    {moment(slot).tz(vetTimezone).format("h:mm A")}
+                    {moment(slot)
+                      .tz(vetTimezone)
+                      .format("h:mm A")}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group">
-              <label>Pet Name:</label>
-              <input
-                type="text"
+              <label>Pet Type:</label>
+              <select
                 value={pet}
                 onChange={(e) => setPet(e.target.value)}
                 required
-              />
+              >
+                <option value="">Select pet type</option>
+                {petTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
-              <label>Address:</label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Notes:</label>
+              <label>Reason:</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}

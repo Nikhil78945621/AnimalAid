@@ -130,10 +130,10 @@ const UserAppointments = () => {
             <div key={appt._id} className="appointment-card">
               <div className="appointment-info">
                 <p>Date: {new Date(appt.dateTime).toLocaleString()}</p>
-                <p>Pet: {appt.pet}</p>
+                <p>Pet Type: {appt.pet}</p>
+                <p>Reason: {appt.notes || "No additional notes"}</p>
                 <p>Status: {appt.status}</p>
                 <p>Vet: {appt.veterinarian?.name}</p>
-                <p>Address: {appt.address}</p>
                 <p>Fee: ${payment.amount}</p>
                 <p>Payment Status: {payment.status}</p>
               </div>
