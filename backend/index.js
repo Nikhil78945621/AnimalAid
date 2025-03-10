@@ -5,17 +5,24 @@ const cors = require("cors");
 const authRouter = require("./routes/authRoute");
 const appointmentRouter = require("./routes/appointmentRoutes");
 const vetRoutes = require("./routes/VetRoutes"); // Ensure correct file path
+const homeVisitRoutes = require("./routes/homeVisitRoutes");
 
 const app = express();
 
 // 1) Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Frontend origin
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // 2) Routes
 app.use("/api/auth", authRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/vet", vetRoutes); // Added vet routes
+app.use("/api/home-visits", homeVisitRoutes);
 
 // 3) MongoDB connection
 mongoose

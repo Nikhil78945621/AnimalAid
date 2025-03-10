@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
+import axios from "axios";
 import "./../Views/Appointment.css";
 import moment from "moment";
+import HomeVisitRequestForm from "./HomeVisitRequestForm"; // Import the HomeVisitRequestForm
 
 const UserAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -12,6 +13,7 @@ const UserAppointments = () => {
     newDateTime: "",
   });
   const [availableSlots, setAvailableSlots] = useState([]);
+  const [showHomeVisitForm, setShowHomeVisitForm] = useState(false); // State to toggle home visit form
   const location = useLocation();
 
   // Fetch appointments for the logged-in user
@@ -119,61 +121,74 @@ const UserAppointments = () => {
     <div className="appointments-container">
       <div className="appointments-header">
         <h2>My Appointments</h2>
-        <Link to="/appointments/new" className="new-appointment-button">
-          + New Appointment
-        </Link>
+        <div>
+          <button
+            onClick={() => setShowHomeVisitForm(!showHomeVisitForm)}
+            className="new-appointment-button"
+          >
+            {showHomeVisitForm ? "Back to Appointments" : "Request Home Visit"}
+          </button>
+          <Link to="/appointments/new" className="new-appointment-button">
+            + New Appointment
+          </Link>
+        </div>
       </div>
-      <div className="appointments-list">
-        {appointments.map((appt) => {
-          const payment = appt.payment || { amount: 0, status: "pending" };
-          return (
-            <div key={appt._id} className="appointment-card">
-              <div className="appointment-info">
-                <p>Date: {new Date(appt.dateTime).toLocaleString()}</p>
-                <p>Pet Type: {appt.pet}</p>
-                <p>Reason: {appt.notes || "No additional notes"}</p>
-                <p>Status: {appt.status}</p>
-                <p>Vet: {appt.veterinarian?.name}</p>
-                <p>Fee: ${payment.amount}</p>
-                <p>Payment Status: {payment.status}</p>
+
+      {showHomeVisitForm ? (
+        <HomeVisitRequestForm />
+      ) : (
+        <div className="appointments-list">
+          {appointments.map((appt) => {
+            const payment = appt.payment || { amount: 0, status: "pending" };
+            return (
+              <div key={appt._id} className="appointment-card">
+                <div className="appointment-info">
+                  <p>Date: {new Date(appt.dateTime).toLocaleString()}</p>
+                  <p>Pet Type: {appt.pet}</p>
+                  <p>Reason: {appt.notes || "No additional notes"}</p>
+                  <p>Status: {appt.status}</p>
+                  <p>Vet: {appt.veterinarian?.name}</p>
+                  <p>Fee: ${payment.amount}</p>
+                  <p>Payment Status: {payment.status}</p>
+                </div>
+                <div className="appointment-actions">
+                  {["pending", "confirmed"].includes(appt.status) && (
+                    <>
+                      <button onClick={() => handleCancel(appt._id)}>
+                        Cancel
+                      </button>
+                      <button onClick={() => handleReschedule(appt._id)}>
+                        Reschedule
+                      </button>
+                    </>
+                  )}
+                  {rescheduleData.appointmentId === appt._id && (
+                    <div className="reschedule-form">
+                      <select
+                        value={rescheduleData.newDateTime}
+                        onChange={(e) =>
+                          setRescheduleData({
+                            ...rescheduleData,
+                            newDateTime: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select a new time</option>
+                        {availableSlots.map((slot) => (
+                          <option key={slot} value={slot}>
+                            {moment(slot).format("LLLL")}
+                          </option>
+                        ))}
+                      </select>
+                      <button onClick={handleRescheduleSubmit}>Confirm</button>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="appointment-actions">
-                {["pending", "confirmed"].includes(appt.status) && (
-                  <>
-                    <button onClick={() => handleCancel(appt._id)}>
-                      Cancel
-                    </button>
-                    <button onClick={() => handleReschedule(appt._id)}>
-                      Reschedule
-                    </button>
-                  </>
-                )}
-                {rescheduleData.appointmentId === appt._id && (
-                  <div className="reschedule-form">
-                    <select
-                      value={rescheduleData.newDateTime}
-                      onChange={(e) =>
-                        setRescheduleData({
-                          ...rescheduleData,
-                          newDateTime: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="">Select a new time</option>
-                      {availableSlots.map((slot) => (
-                        <option key={slot} value={slot}>
-                          {moment(slot).format("LLLL")}
-                        </option>
-                      ))}
-                    </select>
-                    <button onClick={handleRescheduleSubmit}>Confirm</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

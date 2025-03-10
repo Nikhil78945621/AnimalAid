@@ -21,21 +21,26 @@ const generateTimeSlots = (start, end, duration) => {
 exports.getAvailableSlots = async (req, res, next) => {
   try {
     const { vetId, date } = req.query;
-    // ... validation
 
+    // Fetch vet availability
     const vetAvailability = await VetAvailability.findOne({ vet: vetId });
-    const vetTimezone = vetAvailability.timezone;
+    if (!vetAvailability) {
+      return next(new createError("Vet availability not found", 404));
+    }
 
-    // Parse input date in vet's timezone
+    const vetTimezone = vetAvailability.timezone;
     const inputDate = moment.tz(date, "YYYY-MM-DD", vetTimezone);
     const day = inputDate.format("ddd");
 
+    // Find working hours for the selected day
     const workingDay = vetAvailability.workingHours.find(
       (wh) => wh.day === day
     );
-    // ... handle no working day
+    if (!workingDay || !workingDay.active) {
+      return res.json({ timezone: vetTimezone, slots: [] });
+    }
 
-    // Generate time slots in vet's local time
+    // Generate time slots based on working hours and appointment duration
     const start = inputDate.clone().set({
       hour: workingDay.start.split(":")[0],
       minute: workingDay.start.split(":")[1],
@@ -62,23 +67,26 @@ exports.getAvailableSlots = async (req, res, next) => {
     });
 
     // Check blocked slots
-    const blockedSlots = vetAvailability.blockedSlots.filter((blocked) =>
-      utcSlots.some(
-        (slot) =>
-          slot >= new Date(blocked.start) && slot < new Date(blocked.end)
-      )
-    );
+    const blockedSlots = vetAvailability.blockedSlots.filter((blocked) => {
+      const blockedStart = moment(blocked.start).tz(vetTimezone);
+      const blockedEnd = moment(blocked.end).tz(vetTimezone);
+      return utcSlots.some((slot) =>
+        moment(slot).isBetween(blockedStart, blockedEnd, null, "[)")
+      );
+    });
 
     // Filter available slots
-    const availableSlots = slots.filter(
-      (slot, index) =>
+    const availableSlots = slots.filter((slot, index) => {
+      const slotTime = slot.utc().toDate();
+      return (
         !bookedAppointments.some(
-          (appt) => appt.dateTime.getTime() === utcSlots[index].getTime()
+          (appt) => appt.dateTime.getTime() === slotTime.getTime()
         ) &&
         !blockedSlots.some((blocked) =>
-          slot.isBetween(moment(blocked.start), moment(blocked.end))
+          slot.isBetween(moment(blocked.start), moment(blocked.end), null, "[)")
         )
-    );
+      );
+    });
 
     res.json({
       timezone: vetTimezone,

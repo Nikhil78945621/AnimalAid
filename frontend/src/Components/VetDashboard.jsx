@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import VetAppointments from "./VetAppointment"; // Ensure correct import
+import VetAppointments from "./VetAppointment";
 import "./../Views/VetDashboard.css";
+import VetHomeVisitDashboard from "./vetHomeVisitDashboard"; // Import the VetHomeVisitDashboard
 
 const VetDashboard = () => {
   const [vetData, setVetData] = useState({
@@ -352,6 +353,12 @@ const VetDashboard = () => {
 
       <div className="appointments-section">
         <VetAppointments stats={stats} setStats={setStats} />
+      </div>
+
+      {/* Add Home Visit Requests Section */}
+      <div className="home-visit-requests-section">
+        <h2>Home Visit Requests</h2>
+        <VetHomeVisitDashboard />
       </div>
     </div>
   );
