@@ -1,0 +1,87 @@
+/* General Styling */
+.container {
+  animation: fadeIn 0.5s ease-in-out;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Label Styling */
+.form-label {
+  font-weight: bold;
+  color: #333;
+  transition: color 0.3s ease-in-out;
+}
+
+.form-label:hover {
+  color: #007bff;
+}
+
+/* Input and Textarea Styling */
+.form-control {
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  transition: all 0.3s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+}
+
+/* Button Styling with Animation */
+.btn {
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  background-color: #0056b3;
+}
+
+.btn-success:hover {
+  transform: scale(1.05);
+  background-color: #28a745;
+}
+
+/* Image Preview Animation */
+.img-thumbnail {
+  animation: fadeIn 0.5s ease-in-out;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Add Button Animation */
+.btn-primary.mt-2 {
+  position: relative;
+}
+
+.btn-primary.mt-2::after {
+  content: '\002B'; /* Plus icon */
+  position: absolute;
+  right: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.btn-primary.mt-2:hover::after {
+  opacity: 1;
+}

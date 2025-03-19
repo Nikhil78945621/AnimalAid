@@ -19,7 +19,7 @@ const ServiceDetail = () => {
         );
         setDetails(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching service details:", err);
       }
     };
     fetchDetails();
@@ -32,7 +32,7 @@ const ServiceDetail = () => {
       });
       setDetails(details.filter((detail) => detail._id !== id));
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting service detail:", err);
     }
   };
 
@@ -64,11 +64,19 @@ const ServiceDetail = () => {
       <div className="details-grid">
         {details.map((detail) => (
           <div key={detail._id} className="detail-card">
-            <img
-              src={`http://localhost:8084/${detail.image}`}
-              alt={detail.serviceType}
-            />
-
+            {detail.image && (
+              <img
+                src={`http://localhost:8084/${detail.image.replace(
+                  /\\/g,
+                  "/"
+                )}`}
+                alt={detail.serviceType}
+                onError={(e) => {
+                  console.error("Image failed to load:", e.target.src);
+                  e.target.style.display = "none";
+                }}
+              />
+            )}
             <div className="content-section">
               <h3>Common Reasons</h3>
               {detail.reasons.map((reason, i) => (
@@ -78,7 +86,6 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
-
             <div className="content-section">
               <h3>Our Solutions</h3>
               {detail.solutions.map((solution, i) => (
@@ -88,7 +95,6 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
-
             {role === "vet" &&
               detail.vet._id === localStorage.getItem("userId") && (
                 <div className="actions">
