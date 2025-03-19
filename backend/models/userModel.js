@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   clinic: String,
   fee: {
     type: Number,
-    required: function () {
+    required: function() {
       return this.role === "vet";
     },
     default: 0,

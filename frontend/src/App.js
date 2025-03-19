@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate, // Import useLocation hook
+  Navigate,
 } from "react-router-dom";
 
 import Home from "./Components/Home";
@@ -17,6 +17,7 @@ import VetDashboard from "./Components/VetDashboard";
 import { jwtDecode } from "jwt-decode";
 import About from "./Components/About";
 import Service from "./Components/Service";
+import ServiceDetail from "./Components/ServiceDetail";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,7 +51,7 @@ const App = () => {
             element={<Login setIsAuthenticated={setIsAuthenticated} />}
           />
           <Route path="/signup" element={<Signup />} />
-
+          <Route path="/services/:serviceType" element={<ServiceDetail />} />
           {/* Protected Routes */}
           <Route
             path="/appointments"

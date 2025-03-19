@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
-
+import "./../Views/homevisit.css";
 const MapClickHandler = ({ onLocationSelect }) => {
   useMapEvents({
     click(e) {
