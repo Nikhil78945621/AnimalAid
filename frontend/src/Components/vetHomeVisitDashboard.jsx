@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
+import "./../Views/VetHomeVisitDashboard.css";
 
 const VetHomeVisitDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -53,8 +54,8 @@ const VetHomeVisitDashboard = () => {
       <h2>Emergency Home Visit Requests</h2>
       <div className="map-container">
         <MapContainer
-          center={[27.7172, 85.324]}
-          zoom={13}
+          center={[27.7172, 85.324]} // Center on Nepal
+          zoom={7} // Adjust zoom level to focus on Nepal
           style={{ height: "500px", width: "100%" }}
         >
           <TileLayer

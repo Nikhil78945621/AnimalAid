@@ -1,9 +1,11 @@
+/* Container for the service details page */
 .service-detail-container {
   padding: 4rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* Button to add new content */
 .add-btn {
   background: #4CAF50;
   color: white;
@@ -14,17 +16,22 @@
   cursor: pointer;
 }
 
+/* Grid for displaying the service details */
 .details-grid {
   display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 equal-width columns */
   gap: 2rem;
 }
 
+/* Card for each service detail */
 .detail-card {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 1rem;
+  background-color: #fff;
 }
 
+/* Styling for images inside the cards */
 .detail-card img {
   width: 100%;
   height: 300px;
@@ -32,6 +39,7 @@
   border-radius: 4px;
 }
 
+/* Styling for content sections (reasons, solutions) */
 .content-section {
   margin: 1rem 0;
   padding: 1rem;
@@ -43,12 +51,14 @@
   margin: 1rem 0;
 }
 
+/* Action buttons for editing or deleting details */
 .actions {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
 }
 
+/* Edit button */
 .edit-btn {
   background: #2196F3;
   color: white;
@@ -58,6 +68,7 @@
   cursor: pointer;
 }
 
+/* Delete button */
 .delete-btn {
   background: #f44336;
   color: white;
@@ -67,18 +78,33 @@
   cursor: pointer;
 }
 
+/* Responsive grid layout for smaller screens */
+@media (max-width: 1024px) {
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .details-grid {
+    grid-template-columns: 1fr; /* 1 column on mobile screens */
+  }
+}
+
+/* Modal styling for the service form */
 .service-form-modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* Content inside the service form modal */
 .form-content {
   background: white;
   padding: 2rem;
@@ -89,6 +115,7 @@
   overflow-y: auto;
 }
 
+/* Form section inside the modal */
 .form-section {
   margin: 1rem 0;
   padding: 1rem;
@@ -96,6 +123,7 @@
   border-radius: 4px;
 }
 
+/* Buttons in the form */
 .form-buttons {
   display: flex;
   gap: 1rem;

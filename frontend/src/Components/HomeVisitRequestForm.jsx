@@ -84,8 +84,8 @@ const HomeVisitRequestForm = () => {
         <div className="map-container">
           <p>Click on map to select location:</p>
           <MapContainer
-            center={[27.7172, 85.324]} // Default to Kathmandu
-            zoom={13}
+            center={[27.7172, 85.324]} // Center on Nepal
+            zoom={7} // Adjust zoom level to focus on Nepal
             style={{ height: "300px", width: "100%" }}
           >
             <TileLayer

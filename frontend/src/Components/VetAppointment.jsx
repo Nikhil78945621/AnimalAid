@@ -63,7 +63,6 @@ const VetAppointments = ({ stats, setStats }) => {
 
   return (
     <div className="appointments-container">
-      <h2>Appointments</h2>
       <div className="appointments-list">
         {appointments.map((appt) => (
           <div key={appt._id} className="appointment-card vet-card">

@@ -18,6 +18,8 @@ import { jwtDecode } from "jwt-decode";
 import About from "./Components/About";
 import Service from "./Components/Service";
 import ServiceDetail from "./Components/ServiceDetail";
+import HomeVisitRequestForm from "./Components/HomeVisitRequestForm";
+import VetHomeVisitDashboard from "./Components/vetHomeVisitDashboard";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -52,6 +54,10 @@ const App = () => {
           />
           <Route path="/signup" element={<Signup />} />
           <Route path="/services/:serviceType" element={<ServiceDetail />} />
+          <Route path="/home-visit" element={<HomeVisitRequestForm />} />
+          <Route path="/vet-home-visit" element={<VetHomeVisitDashboard />} />
+          <Route path="/vet-appointments" element={<VetAppointments />} />
+
           {/* Protected Routes */}
           <Route
             path="/appointments"
@@ -76,21 +82,6 @@ const App = () => {
                   <VetAppointments />
                 ) : (
                   <CreateAppointment />
-                )
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-
-          <Route
-            path="/vet-appointments"
-            element={
-              isAuthenticated ? (
-                userRole === "user" ? (
-                  <CreateAppointment />
-                ) : (
-                  <VetAppointments />
                 )
               ) : (
                 <Navigate to="/login" />

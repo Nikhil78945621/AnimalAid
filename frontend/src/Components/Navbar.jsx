@@ -51,11 +51,23 @@ const Navbar = () => {
         <li>
           <a href="/">Home</a>
         </li>
-        {isLoggedIn && (
-          <li>
-            <Link to={role === "vet" ? "/vet-dashboard" : "/appointments"}>
-              Appointments
-            </Link>
+        {isLoggedIn && role === "user" && (
+          <li className="dropdown">
+            <a href="#appointments">Appointments</a>
+            <div className="dropdown-content">
+              <Link to="/appointments">My Appointments</Link>
+              <Link to="/appointments/new">Create Appointment</Link>
+              <Link to="/home-visit">Home Visit Request</Link>
+            </div>
+          </li>
+        )}
+        {isLoggedIn && role === "vet" && (
+          <li className="dropdown">
+            <a href="/vet-appointments">Vet appointment</a>
+            <div className="dropdown-content">
+              <Link to="/vet-dashboard">Vet Dashboard</Link>
+              <Link to="/vet-home-visit">Home Visit Requests</Link>
+            </div>
           </li>
         )}
         <li>

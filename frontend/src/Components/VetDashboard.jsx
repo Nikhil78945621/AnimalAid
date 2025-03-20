@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import VetAppointments from "./VetAppointment";
 import "./../Views/VetDashboard.css";
-import VetHomeVisitDashboard from "./vetHomeVisitDashboard"; // Import the VetHomeVisitDashboard
 
 const VetDashboard = () => {
   const [vetData, setVetData] = useState({
@@ -10,10 +9,6 @@ const VetDashboard = () => {
     speciality: "",
     address: "",
     clinic: "",
-  });
-  const [stats, setStats] = useState({
-    totalAppointments: 0,
-    totalIncome: 0,
   });
   const [loading, setLoading] = useState(true);
   const [availability, setAvailability] = useState({
@@ -35,17 +30,13 @@ const VetDashboard = () => {
     reason: "",
   });
 
-  // Fetch vet profile, stats, and availability
+  // Fetch vet profile and availability
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         const profileResponse = await axios.get(
           "http://localhost:8084/api/auth/profile",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const statsResponse = await axios.get(
-          "http://localhost:8084/api/appointments/vet/stats",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const availabilityResponse = await axios.get(
@@ -58,11 +49,6 @@ const VetDashboard = () => {
           speciality: profileResponse.data.speciality || "",
           address: profileResponse.data.address || "",
           clinic: profileResponse.data.clinic || "",
-        });
-
-        setStats({
-          totalAppointments: statsResponse.data.totalAppointments,
-          totalIncome: statsResponse.data.totalIncome,
         });
 
         if (availabilityResponse.data) {
@@ -142,23 +128,12 @@ const VetDashboard = () => {
     }
   };
 
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) return <div className="loading">Loading dashboard...</div>;
 
   return (
     <div className="vet-dashboard">
       <div className="dashboard-header">
         <h1>Veterinarian Dashboard</h1>
-      </div>
-
-      <div className="dashboard-stats">
-        <div className="stat-card">
-          <h3>Total Appointments</h3>
-          <p>{stats.totalAppointments}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Total Income</h3>
-          <p>${stats.totalIncome}</p>
-        </div>
       </div>
 
       <div className="profile-section">
@@ -349,16 +324,6 @@ const VetDashboard = () => {
             Block Slot
           </button>
         </form>
-      </div>
-
-      <div className="appointments-section">
-        <VetAppointments stats={stats} setStats={setStats} />
-      </div>
-
-      {/* Add Home Visit Requests Section */}
-      <div className="home-visit-requests-section">
-        <h2>Home Visit Requests</h2>
-        <VetHomeVisitDashboard />
       </div>
     </div>
   );
