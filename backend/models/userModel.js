@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    enum: ["user", "vet", "admin"],
     default: "user",
   },
   speciality: String,
@@ -30,6 +31,32 @@ const userSchema = new mongoose.Schema({
     default: 0,
     min: [0, "Fee cannot be negative"],
   },
+  timezone: {
+    type: String,
+    default: "UTC",
+  },
+  // Add notifications array
+  notifications: [
+    {
+      message: {
+        type: String,
+        required: true,
+      },
+      type: {
+        type: String,
+        enum: ["appointment", "home-visit", "system"],
+        default: "system",
+      },
+      read: {
+        type: Boolean,
+        default: false,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);

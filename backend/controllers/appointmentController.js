@@ -229,6 +229,7 @@ exports.getAllVets = async (req, res, next) => {
 
 // Confirm appointment (vet)
 // controllers/appointmentController.js
+// Confirm appointment
 exports.confirmAppointment = async (req, res, next) => {
   try {
     const appointment = await Appointment.findOne({
@@ -244,27 +245,33 @@ exports.confirmAppointment = async (req, res, next) => {
     }
 
     // Get vet's timezone
-    const vetAvailability = await VetAvailability.findOne({
-      vet: req.user._id,
-    });
-    const vetTimezone = vetAvailability?.timezone || "UTC";
+    const vet = await User.findById(req.user._id);
+    const vetTimezone = vet?.timezone || "UTC";
 
     // Format appointment time in vet's timezone
     const formattedDate = moment(appointment.dateTime)
       .tz(vetTimezone)
       .format("MMMM Do YYYY, h:mm a");
 
-    // Add notification
-    appointment.notifications.push({
-      message: `Your appointment on ${formattedDate} has been confirmed!`,
+    // Add notification to the user
+    await User.findByIdAndUpdate(appointment.petOwner, {
+      $push: {
+        notifications: {
+          message: `Your appointment on ${formattedDate} has been confirmed!`,
+          type: "appointment",
+          read: false,
+        },
+      },
     });
 
+    // Update appointment status
     appointment.status = "confirmed";
     await appointment.save();
 
     res.status(200).json(appointment);
   } catch (error) {
-    next(error);
+    console.error("Error confirming appointment:", error);
+    next(new createError("Internal server error", 500));
   }
 };
 
@@ -383,26 +390,49 @@ exports.rescheduleAppointment = async (req, res, next) => {
 };
 
 // In your backend (appointmentController.js)
+
 exports.getUserNotifications = async (req, res, next) => {
   try {
-    const appointments = await Appointment.find(
-      { petOwner: req.user._id, "notifications.0": { $exists: true } },
-      { notifications: 1 }
-    ).sort({ "notifications.createdAt": -1 });
+    const userId = req.user._id;
 
-    let notifications = [];
-    appointments.forEach((appt) => {
-      appt.notifications.forEach((notif) => {
-        notifications.push({
-          id: notif._id,
-          message: notif.message,
-          createdAt: notif.createdAt,
-        });
-      });
+    // Fetch user with notifications
+    const user = await User.findById(userId, { notifications: 1 });
+
+    if (!user) {
+      return next(new createError("User not found", 404));
+    }
+
+    // Sort notifications by createdAt (newest first)
+    const notifications = user.notifications.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: notifications,
+    });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    next(new createError("Failed to fetch notifications", 500));
+  }
+};
+
+// Mark notifications as read
+exports.markNotificationsAsRead = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    // Mark all notifications as read
+    await User.findByIdAndUpdate(userId, {
+      $set: { "notifications.$[].read": true },
     });
 
-    res.status(200).json({ status: "success", data: notifications });
+    res.status(200).json({
+      status: "success",
+      message: "Notifications marked as read",
+    });
   } catch (error) {
-    next(error);
+    console.error("Error marking notifications as read:", error);
+    next(new createError("Failed to update notifications", 500));
   }
 };

@@ -70,4 +70,10 @@ router.get(
   appointmentController.getUserNotifications
 );
 
+router.get(
+  "/notifications/mark-read",
+  protect,
+  appointmentController.markNotificationsAsRead
+);
+
 module.exports = router;

@@ -1,15 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "./../Views/Appointment.css";
 
 const VetAppointments = ({ stats, setStats }) => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAppointments = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found. Redirecting to login.");
+        navigate("/login");
+        return;
+      }
+
+      // Check token expiry
+      const decodedToken = jwtDecode(token);
+      if (decodedToken.exp * 1000 < Date.now()) {
+        console.error("Token expired. Redirecting to login.");
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("token");
         const response = await axios.get(
           "http://localhost:8084/api/appointments/vet",
           {
@@ -19,19 +36,35 @@ const VetAppointments = ({ stats, setStats }) => {
         setAppointments(response.data.data);
       } catch (error) {
         console.error("Error fetching appointments:", error);
+        if (error.response?.status === 401) {
+          console.error("Unauthorized. Redirecting to login.");
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchAppointments();
-  }, []);
+  }, [navigate]);
 
   const updateStatus = async (id, status) => {
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found. Redirecting to login.");
+      navigate("/login");
+      return;
+    }
 
-      // Update appointment status
+    // Check token expiry
+    const decodedToken = jwtDecode(token);
+    if (decodedToken.exp * 1000 < Date.now()) {
+      console.error("Token expired. Redirecting to login.");
+      navigate("/login");
+      return;
+    }
+
+    try {
       await axios.patch(
         `http://localhost:8084/api/appointments/${id}/${status}`,
         null,
@@ -46,16 +79,22 @@ const VetAppointments = ({ stats, setStats }) => {
       setAppointments(appointmentsResponse.data.data);
 
       // Refresh stats
-      const statsResponse = await axios.get(
-        "http://localhost:8084/api/appointments/vet/stats",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setStats({
-        totalAppointments: statsResponse.data.totalAppointments,
-        totalIncome: statsResponse.data.totalIncome,
-      });
+      if (setStats) {
+        const statsResponse = await axios.get(
+          "http://localhost:8084/api/appointments/vet/stats",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setStats({
+          totalAppointments: statsResponse.data.totalAppointments,
+          totalIncome: statsResponse.data.totalIncome,
+        });
+      }
     } catch (error) {
       console.error(`Error ${status} appointment:`, error);
+      if (error.response?.status === 401) {
+        console.error("Unauthorized. Redirecting to login.");
+        navigate("/login");
+      }
     }
   };
 

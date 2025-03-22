@@ -1,5 +1,7 @@
 const HomeVisitRequest = require("../models/HomeVisitRequest");
 const createError = require("../utils/appError");
+const User = require("../models/userModel");
+const moment = require("moment-timezone");
 
 exports.createRequest = async (req, res, next) => {
   try {
@@ -49,30 +51,58 @@ exports.getVetRequests = async (req, res, next) => {
   }
 };
 
+// Accept a home visit request
 exports.acceptRequest = async (req, res, next) => {
   try {
-    const requestId = req.params.id;
-    const vetId = req.user._id; // Vet ID from authenticated user
+    const { id: requestId } = req.params;
+    const vetId = req.user._id;
 
+    // Fetch vet and request
+    const [vet, request] = await Promise.all([
+      User.findById(vetId),
+      HomeVisitRequest.findById(requestId),
+    ]);
+
+    if (!vet) return next(new createError("Vet not found", 404));
+    if (!request) return next(new createError("Request not found", 404));
+
+    // Format the acceptance message
+    const formattedDate = moment()
+      .tz(vet.timezone || "UTC")
+      .format("MMMM Do YYYY, h:mm a");
+    const message = `Your home visit request has been accepted by Dr. ${vet.name} on ${formattedDate}`;
+
+    // Add notification to the user
+    await User.findByIdAndUpdate(request.petOwner, {
+      $push: {
+        notifications: {
+          message,
+          type: "home-visit",
+          read: false,
+        },
+      },
+    });
+
+    // Update the request status
     const updatedRequest = await HomeVisitRequest.findByIdAndUpdate(
       requestId,
       {
-        veterinarian: vetId,
-        status: "accepted",
+        $set: {
+          veterinarian: vetId,
+          status: "accepted",
+          acceptedAt: new Date(),
+        },
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
-
-    if (!updatedRequest) {
-      return next(new createError("Request not found", 404));
-    }
 
     res.status(200).json({
       status: "success",
       data: updatedRequest,
     });
   } catch (error) {
-    next(new createError("Failed to accept request", 500));
+    console.error("Accept request error:", error);
+    next(new createError("Internal server error", 500));
   }
 };
 

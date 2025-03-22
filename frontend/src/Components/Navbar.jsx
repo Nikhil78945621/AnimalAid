@@ -11,6 +11,7 @@ const Navbar = () => {
   const isLoggedIn = !!localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
+  // Fetch notifications
   useEffect(() => {
     if (isLoggedIn) {
       fetchNotifications();
@@ -22,17 +23,37 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         "http://localhost:8084/api/appointments/notifications",
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       setNotifications(response.data.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);
+    }
+  };
+
+  // Mark notifications as read
+  const markNotificationsAsRead = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        "http://localhost:8084/api/appointments/notifications/mark-read",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      fetchNotifications(); // Refresh notifications
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
     }
   };
 
@@ -56,7 +77,7 @@ const Navbar = () => {
             <a href="#appointments">Appointments</a>
             <div className="dropdown-content">
               <Link to="/appointments">My Appointments</Link>
-              <Link to="/appointments/new">Create Appointment</Link>
+              <Link to="/appointments/new">Book Appointment</Link>
               <Link to="/home-visit">Home Visit Request</Link>
             </div>
           </li>
@@ -93,9 +114,9 @@ const Navbar = () => {
                 onClick={() => setShowNotifications(!showNotifications)}
               >
                 <i className="fa-regular fa-bell"></i>
-                {notifications.length > 0 && (
+                {notifications.filter((n) => !n.read).length > 0 && (
                   <span className="notification-badge">
-                    {notifications.length}
+                    {notifications.filter((n) => !n.read).length}
                   </span>
                 )}
               </button>
@@ -105,7 +126,12 @@ const Navbar = () => {
                     <div className="notification-item">No notifications</div>
                   ) : (
                     notifications.map((notification) => (
-                      <div key={notification.id} className="notification-item">
+                      <div
+                        key={notification._id}
+                        className={`notification-item ${
+                          notification.read ? "read" : "unread"
+                        }`}
+                      >
                         <div className="notification-message">
                           {notification.message}
                         </div>
@@ -115,6 +141,12 @@ const Navbar = () => {
                       </div>
                     ))
                   )}
+                  <button
+                    className="mark-read-btn"
+                    onClick={markNotificationsAsRead}
+                  >
+                    Mark All as Read
+                  </button>
                 </div>
               )}
             </div>
