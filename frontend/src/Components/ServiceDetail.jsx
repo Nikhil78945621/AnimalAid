@@ -95,26 +95,25 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
-            {role === "vet" &&
-              detail.vet._id === localStorage.getItem("userId") && (
-                <div className="actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => {
-                      setEditing(detail);
-                      setShowForm(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(detail._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
+            {role === "vet" && (
+              <div className="actions">
+                <button
+                  className="edit-btn"
+                  onClick={() => {
+                    setEditing(detail);
+                    setShowForm(true);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(detail._id)}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
