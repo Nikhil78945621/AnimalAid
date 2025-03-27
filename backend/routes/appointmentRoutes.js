@@ -76,4 +76,13 @@ router.get(
   appointmentController.markNotificationsAsRead
 );
 
+router.post(
+  "/payment/generate-signature",
+  protect,
+  appointmentController.generateSignature
+);
+router.get(
+  "/payment/verify/:appointmentId",
+  appointmentController.verifyPayment
+);
 module.exports = router;

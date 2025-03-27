@@ -25,37 +25,20 @@ const appointmentSchema = new mongoose.Schema({
     default: "pending",
   },
   notes: String,
-  medicalHistory: [String],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  feedback: {
-    rating: {
+  payment: {
+    amount: {
       type: Number,
-      min: 1,
-      max: 5,
+      required: true,
+      default: 0,
     },
-    comment: String,
-    payment: {
-      amount: {
-        type: Number,
-        required: true,
-        default: 0, // Default value for amount
-      },
-      status: {
-        type: String,
-        enum: ["pending", "paid"],
-        default: "pending", // Default value for status
-      },
+    status: {
+      type: String,
+      enum: ["pending", "paid"],
+      default: "pending",
     },
+    transactionId: String,
+    paidAt: Date,
   },
-  notifications: [
-    {
-      message: String,
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
 });
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

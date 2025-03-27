@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./../Views/Appointment.css";
 import moment from "moment";
@@ -13,7 +13,7 @@ const UserAppointments = () => {
   });
   const [availableSlots, setAvailableSlots] = useState([]);
   const location = useLocation();
-
+  const navigate = useNavigate();
   // Fetch appointments for the logged-in user
   const fetchAppointments = async () => {
     try {
@@ -131,7 +131,7 @@ const UserAppointments = () => {
                 <p>Reason: {appt.notes || "No additional notes"}</p>
                 <p>Status: {appt.status}</p>
                 <p>Vet: {appt.veterinarian?.name}</p>
-                <p>Fee: ${payment.amount}</p>
+                <p>Fee: Rs{appt.veterinarian?.fee}</p>
                 <p>Payment Status: {payment.status}</p>
               </div>
               <div className="appointment-actions">
@@ -142,6 +142,15 @@ const UserAppointments = () => {
                     </button>
                     <button onClick={() => handleReschedule(appt._id)}>
                       Reschedule
+                    </button>
+                    <button
+                      onClick={() =>
+                        navigate(`/payment/${appt._id}`, {
+                          state: { appointment: appt },
+                        })
+                      }
+                    >
+                      Pay Now
                     </button>
                   </>
                 )}

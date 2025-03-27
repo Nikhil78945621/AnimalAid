@@ -19,7 +19,10 @@ import About from "./Components/About";
 import Service from "./Components/Service";
 import ServiceDetail from "./Components/ServiceDetail";
 import HomeVisitRequestForm from "./Components/HomeVisitRequestForm";
-import VetHomeVisitDashboard from "./Components/vetHomeVisitDashboard";
+import VetHomeVisitDashboard from "./Components/VetHomeVisitDashboard";
+import ESEWAPayment from "./Components/ESEWAPayment";
+import PaymentFailure from "./Components/PaymentFailed";
+import PaymentSuccess from "./Components/PaymentSuccess";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,6 +61,15 @@ const App = () => {
           <Route path="/vet-home-visit" element={<VetHomeVisitDashboard />} />
           <Route path="/vet-appointments" element={<VetAppointments />} />
 
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/failure" element={<PaymentFailure />} />
+
+          <Route
+            path="/payment/:appointmentId"
+            element={
+              isAuthenticated ? <ESEWAPayment /> : <Navigate to="/login" />
+            }
+          />
           {/* Protected Routes */}
           <Route
             path="/appointments"
@@ -73,7 +85,6 @@ const App = () => {
               )
             }
           />
-
           <Route
             path="/appointments/new"
             element={
@@ -88,7 +99,6 @@ const App = () => {
               )
             }
           />
-
           <Route
             path="/vet-dashboard"
             element={

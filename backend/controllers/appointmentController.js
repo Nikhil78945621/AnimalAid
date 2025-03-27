@@ -3,6 +3,7 @@ const VetAvailability = require("../models/VetAvailability");
 const createError = require("../utils/appError");
 const User = require("../models/userModel");
 const moment = require("moment-timezone");
+const CryptoJS = require("crypto-js");
 
 // Helper function to generate time slots
 const generateTimeSlots = (start, end, duration) => {
@@ -227,8 +228,6 @@ exports.getAllVets = async (req, res, next) => {
   }
 };
 
-// Confirm appointment (vet)
-// controllers/appointmentController.js
 // Confirm appointment
 exports.confirmAppointment = async (req, res, next) => {
   try {
@@ -434,5 +433,73 @@ exports.markNotificationsAsRead = async (req, res, next) => {
   } catch (error) {
     console.error("Error marking notifications as read:", error);
     next(new createError("Failed to update notifications", 500));
+  }
+};
+
+exports.generateSignature = async (req, res, next) => {
+  try {
+    // Verify authentication
+    if (!req.user) {
+      return next(new createError("Unauthorized: Please login first", 401));
+    }
+
+    const { total_amount, transaction_uuid, product_code } = req.body;
+
+    if (!total_amount || !transaction_uuid || !product_code) {
+      return next(new createError("Missing required fields", 400));
+    }
+
+    const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
+    const secretKey = process.env.ESEWA_SECRET_KEY || "8gBm/:&EnhH.1/q";
+
+    const hash = CryptoJS.HmacSHA256(message, secretKey);
+    const signature = CryptoJS.enc.Base64.stringify(hash);
+
+    res.status(200).json({
+      status: "success",
+      signature,
+    });
+  } catch (error) {
+    next(new createError(error.message, 500));
+  }
+};
+
+exports.verifyPayment = async (req, res, next) => {
+  try {
+    const { appointmentId } = req.params;
+    const { amount, referenceId, status } = req.query;
+
+    if (status !== "COMPLETE") {
+      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
+    }
+
+    // Verify payment with eSewa API
+    const verificationUrl =
+      "https://rc-epay.esewa.com.np/api/epay/transaction/status/";
+    const verificationParams = {
+      product_code: "EPAYTEST",
+      total_amount: amount,
+      transaction_uuid: referenceId,
+    };
+
+    const response = await axios.get(verificationUrl, {
+      params: verificationParams,
+    });
+
+    if (response.data.status === "COMPLETE") {
+      // Update appointment payment status
+      await Appointment.findByIdAndUpdate(appointmentId, {
+        "payment.status": "paid",
+        "payment.transactionId": referenceId,
+        "payment.paidAt": new Date(),
+        "payment.amount": amount,
+      });
+
+      return res.redirect(`/payment/success?appointmentId=${appointmentId}`);
+    } else {
+      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
+    }
+  } catch (error) {
+    next(new createError("Payment verification failed", 500));
   }
 };

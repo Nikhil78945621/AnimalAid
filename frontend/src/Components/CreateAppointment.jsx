@@ -143,7 +143,7 @@ const CreateAppointment = () => {
                 <option value="">Select a vet</option>
                 {vets.map((vet) => (
                   <option key={vet._id} value={vet._id}>
-                    {vet.name} ({vet.speciality}) - Fee: ${vet.fee}
+                    {vet.name} ({vet.speciality}) - Fee: Rs {vet.fee}
                   </option>
                 ))}
               </select>
