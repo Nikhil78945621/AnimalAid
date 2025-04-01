@@ -158,19 +158,11 @@ const Navbar = () => {
             <div className="search-results-dropdown">
               {searchResults.length > 0 ? (
                 searchResults.map((vet) => (
-                  <Link
-                    to={`/appointments/new?vetId=${vet._id}`}
-                    className="vet-card"
-                    key={vet._id}
-                    onClick={() => {
-                      setShowResults(false);
-                      setSearchQuery("");
-                    }}
-                  >
+                  <div className="vet-card" key={vet._id}>
                     <h4>{vet.name}</h4>
                     <p>Speciality: {vet.speciality}</p>
                     <p>Fee: Rs.{vet.fee}</p>
-                  </Link>
+                  </div>
                 ))
               ) : (
                 <div className="no-results">No vets found</div>
