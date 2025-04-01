@@ -85,4 +85,7 @@ router.get(
   "/payment/verify/:appointmentId",
   appointmentController.verifyPayment
 );
+
+router.get("/vets/search", appointmentController.searchVets);
+
 module.exports = router;

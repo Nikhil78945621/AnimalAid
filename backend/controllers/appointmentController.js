@@ -436,6 +436,28 @@ exports.markNotificationsAsRead = async (req, res, next) => {
   }
 };
 
+//Get Vets by name
+// Get vets by name
+exports.searchVets = async (req, res, next) => {
+  try {
+    const { name } = req.query;
+    const searchQuery = name
+      ? { name: { $regex: new RegExp(name, "i") }, role: "vet" }
+      : { role: "vet" };
+
+    const vets = await User.find(searchQuery).select("name speciality fee");
+
+    res.status(200).json({
+      status: "success",
+      results: vets.length,
+      data: vets,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// payment integration
 exports.generateSignature = async (req, res, next) => {
   try {
     // Verify authentication

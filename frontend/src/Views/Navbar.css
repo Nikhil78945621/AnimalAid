@@ -47,6 +47,12 @@
   color: #007bff;
 }
 
+/* Search Container */
+.search-container {
+  position: relative;
+  width: 250px;
+}
+
 /* Search Bar Styling */
 .search-bar {
   display: flex;
@@ -56,23 +62,72 @@
 
 .search-bar input {
   padding: 8px 12px;
+  padding-right: 35px;
   border: 1px solid #ddd;
   border-radius: 20px;
-  width: 200px;
+  width: 100%;
   transition: all 0.3s ease;
 }
 
 .search-bar input:focus {
   outline: none;
   border-color: #007bff;
-  width: 250px;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .search-icon {
   position: absolute;
-  right: 10px;
+  right: 12px;
   color: #888;
   cursor: pointer;
+}
+
+/* Search Results Dropdown */
+.search-results-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.vet-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: block;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.vet-card:hover {
+  background-color: #f8f9fa;
+}
+
+.vet-card h4 {
+  margin: 0 0 5px 0;
+  color: #007bff;
+  font-size: 1rem;
+}
+
+.vet-card p {
+  margin: 3px 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.no-results {
+  padding: 12px 16px;
+  color: #666;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 /* Right Section (Profile and Logout) */
@@ -186,12 +241,16 @@
   transition: background-color 0.2s;
 }
 
+.notification-item.unread {
+  background-color: #f8f9fa;
+}
+
 .notification-item:last-child {
   border-bottom: none;
 }
 
 .notification-item:hover {
-  background-color: #f8f9fa;
+  background-color: #f1f1f1;
 }
 
 .notification-message {
@@ -205,7 +264,21 @@
   margin-top: 4px;
 }
 
-/* Navbar.css */
+.mark-read-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border: none;
+  border-top: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.mark-read-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* Dropdown Styles */
 .dropdown {
   position: relative;
   display: inline-block;
@@ -218,13 +291,15 @@
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
+  border-radius: 8px;
 }
 
 .dropdown-content a {
-  color: black;
+  color: #333;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
+  transition: background-color 0.3s;
 }
 
 .dropdown-content a:hover {
@@ -235,3 +310,44 @@
   display: block;
 }
 
+/* Responsive Design */
+@media (max-width: 992px) {
+  .navbar {
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .navbar-links {
+    margin: 15px 0;
+  }
+
+  .search-container {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .navbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar-links li {
+    margin: 5px 0;
+  }
+
+  .search-bar input {
+    width: 100%;
+  }
+
+  .notifications-dropdown {
+    width: 280px;
+    right: -50px;
+  }
+}

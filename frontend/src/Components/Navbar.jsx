@@ -8,6 +8,9 @@ const Navbar = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
@@ -15,11 +18,49 @@ const Navbar = () => {
   useEffect(() => {
     if (isLoggedIn) {
       fetchNotifications();
-      // Refresh notifications every 5 minutes
       const interval = setInterval(fetchNotifications, 300000);
       return () => clearInterval(interval);
     }
   }, [isLoggedIn]);
+
+  // Debounced search
+  useEffect(() => {
+    const delayDebounce = setTimeout(async () => {
+      if (searchQuery.trim()) {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await axios.get(
+            `http://localhost:8084/api/appointments/vets/search?name=${searchQuery}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          setSearchResults(response.data.data);
+          setShowResults(true);
+        } catch (error) {
+          console.error("Search error:", error);
+          setSearchResults([]);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  // Close results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".search-container")) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const fetchNotifications = async () => {
     try {
@@ -38,7 +79,6 @@ const Navbar = () => {
     }
   };
 
-  // Mark notifications as read
   const markNotificationsAsRead = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -51,7 +91,7 @@ const Navbar = () => {
           },
         }
       );
-      fetchNotifications(); // Refresh notifications
+      fetchNotifications();
     } catch (error) {
       console.error("Error marking notifications as read:", error);
     }
@@ -102,9 +142,41 @@ const Navbar = () => {
         </li>
       </ul>
       <div className="navbar-right">
-        <div className="search-bar">
-          <input type="text" placeholder="Search.." />
-          <i className="fa-solid fa-magnifying-glass search-icon"></i>
+        <div className="search-container">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search vets by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClick={() => setShowResults(true)}
+            />
+            <i className="fa-solid fa-magnifying-glass search-icon"></i>
+          </div>
+
+          {showResults && searchQuery && (
+            <div className="search-results-dropdown">
+              {searchResults.length > 0 ? (
+                searchResults.map((vet) => (
+                  <Link
+                    to={`/appointments/new?vetId=${vet._id}`}
+                    className="vet-card"
+                    key={vet._id}
+                    onClick={() => {
+                      setShowResults(false);
+                      setSearchQuery("");
+                    }}
+                  >
+                    <h4>{vet.name}</h4>
+                    <p>Speciality: {vet.speciality}</p>
+                    <p>Fee: Rs.{vet.fee}</p>
+                  </Link>
+                ))
+              ) : (
+                <div className="no-results">No vets found</div>
+              )}
+            </div>
+          )}
         </div>
         {isLoggedIn ? (
           <div className="profile-section">
