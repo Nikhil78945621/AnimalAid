@@ -23,7 +23,7 @@ import VetHomeVisitDashboard from "./Components/VetHomeVisitDashboard";
 import ESEWAPayment from "./Components/ESEWAPayment";
 import PaymentFailure from "./Components/PaymentFailed";
 import PaymentSuccess from "./Components/PaymentSuccess";
-
+import AdminDashboard from "./Components/admin/AdminDashboard";
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState("");
@@ -62,11 +62,25 @@ const App = () => {
           <Route path="/vet-appointments" element={<VetAppointments />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
-
           <Route
             path="/payment/:appointmentId"
             element={
               isAuthenticated ? <ESEWAPayment /> : <Navigate to="/login" />
+            }
+          />
+          {/* Admin Dashboard Route */}
+          <Route
+            path="/admin-dashboard"
+            element={
+              isAuthenticated ? (
+                userRole === "vet" ? (
+                  <VetAppointments />
+                ) : (
+                  <AdminDashboard />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
             }
           />
           {/* Protected Routes */}
