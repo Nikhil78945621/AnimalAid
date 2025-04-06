@@ -35,6 +35,15 @@ const serviceDetailSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    feedback: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

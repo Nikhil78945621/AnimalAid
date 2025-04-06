@@ -1,247 +1,238 @@
 import React, { useState } from "react";
+import axios from "axios";
+
 import "./../Views/serviceform.css";
 
-const ServiceForm = ({ setShowForm, setDetails, editing }) => {
-  // State for form fields
-  const [serviceName, setServiceName] = useState(editing?.serviceType || "");
-  const [description, setDescription] = useState(editing?.description || "");
-  const [image, setImage] = useState(null);
+const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
+  const [formData, setFormData] = useState({
+    serviceType: editing?.serviceType || serviceType,
+    description: editing?.description || "",
+    image: null,
+    reasons: editing?.reasons || [{ title: "", description: "" }],
+    solutions: editing?.solutions || [{ title: "", description: "" }],
+  });
   const [preview, setPreview] = useState(editing?.image || null);
-  const [reasons, setReasons] = useState(
-    editing?.reasons || [{ title: "", description: "" }]
-  );
-  const [solutions, setSolutions] = useState(
-    editing?.solutions || [{ title: "", description: "" }]
-  );
 
-  // Handle Image Upload
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    setImage(file);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, image: file });
     setPreview(URL.createObjectURL(file));
   };
 
-  // Handle Reason Change
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleReasonChange = (index, field, value) => {
-    const newReasons = [...reasons];
+    const newReasons = [...formData.reasons];
     newReasons[index][field] = value;
-    setReasons(newReasons);
+    setFormData({ ...formData, reasons: newReasons });
   };
 
-  // Handle Solution Change
   const handleSolutionChange = (index, field, value) => {
-    const newSolutions = [...solutions];
+    const newSolutions = [...formData.solutions];
     newSolutions[index][field] = value;
-    setSolutions(newSolutions);
+    setFormData({ ...formData, solutions: newSolutions });
   };
 
-  // Add New Reason Field
   const addReason = () => {
-    setReasons([...reasons, { title: "", description: "" }]);
+    setFormData({
+      ...formData,
+      reasons: [...formData.reasons, { title: "", description: "" }],
+    });
   };
 
-  // Add New Solution Field
   const addSolution = () => {
-    setSolutions([...solutions, { title: "", description: "" }]);
+    setFormData({
+      ...formData,
+      solutions: [...formData.solutions, { title: "", description: "" }],
+    });
   };
 
-  // Handle Form Submission
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const removeReason = (index) => {
+    const newReasons = formData.reasons.filter((_, i) => i !== index);
+    setFormData({ ...formData, reasons: newReasons });
+  };
 
+  const removeSolution = (index) => {
+    const newSolutions = formData.solutions.filter((_, i) => i !== index);
+    setFormData({ ...formData, solutions: newSolutions });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const token = localStorage.getItem("token");
 
-    // Validate serviceType
-    const validServiceTypes = [
-      "Eye Care",
-      "Vaccination",
-      "Physiotherapy",
-      "Cardiology",
-      "Laboratory",
-      "Medical Checkup",
-    ];
-
-    if (!validServiceTypes.includes(serviceName)) {
-      alert("Invalid service type. Please select a valid option.");
-      return;
-    }
-
-    // Create FormData object
-    const formData = new FormData();
-    formData.append("serviceType", serviceName);
-    formData.append("description", description);
-    if (image) formData.append("image", image); // Append image only if it exists
-    formData.append("reasons", JSON.stringify(reasons));
-    formData.append("solutions", JSON.stringify(solutions));
+    const data = new FormData();
+    data.append("serviceType", formData.serviceType);
+    data.append("reasons", JSON.stringify(formData.reasons));
+    data.append("solutions", JSON.stringify(formData.solutions));
+    if (formData.image) data.append("image", formData.image);
 
     try {
-      const url = editing
-        ? `http://localhost:8084/api/services/${editing._id}`
-        : "http://localhost:8084/api/services";
-      const method = editing ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(
-          editing
-            ? "Service Updated Successfully!"
-            : "Service Created Successfully!"
-        );
-        setShowForm(false);
-        setDetails((prev) =>
-          editing
-            ? prev.map((item) => (item._id === result._id ? result : item))
-            : [...prev, result]
+      let response;
+      if (editing) {
+        response = await axios.put(
+          `http://localhost:8084/api/services/${editing._id}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
       } else {
-        const errorData = await response.json();
-        console.error("Error Response:", errorData);
-        alert(`Error: ${errorData.message || "Unknown error"}`);
+        response = await axios.post(
+          "http://localhost:8084/api/services",
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
       }
+
+      if (editing) {
+        setDetails((prev) =>
+          prev.map((item) =>
+            item._id === response.data._id ? response.data : item
+          )
+        );
+      } else {
+        setDetails((prev) => [...prev, response.data]);
+      }
+      setShowForm(false);
     } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred! Check your network and try again.");
+      console.error("Error submitting form:", error);
+      alert("Failed to submit. Please try again.");
     }
   };
 
   return (
-    <div className="container mt-5">
-      <h2>{editing ? "Edit Service" : "Create a Service"}</h2>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        {/* Service Name */}
-        <div className="mb-3">
-          <label className="form-label">Service Name</label>
-          <select
-            className="form-control"
-            value={serviceName}
-            onChange={(e) => setServiceName(e.target.value)}
-            required
-          >
-            <option value="">Select a service type</option>
-            <option value="Eye Care">Eye Care</option>
-            <option value="Vaccination">Vaccination</option>
-            <option value="Physiotherapy">Physiotherapy</option>
-            <option value="Cardiology">Cardiology</option>
-            <option value="Laboratory">Laboratory</option>
-            <option value="Medical Checkup">Medical Checkup</option>
-          </select>
-        </div>
+    <div className="service-form-modal">
+      <div className="service-form-container">
+        <h2>{editing ? "Edit Service" : "Add New Service"}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Service Type</label>
+            <select
+              name="serviceType"
+              value={formData.serviceType}
+              onChange={handleChange}
+              disabled={!!editing}
+            >
+              <option value="Eye Care">Eye Care</option>
+              <option value="Vaccination">Vaccination</option>
+              <option value="Physiotherapy">Physiotherapy</option>
+              <option value="Cardiology">Cardiology</option>
+              <option value="Laboratory">Laboratory</option>
+              <option value="Medical Checkup">Medical Checkup</option>
+            </select>
+          </div>
 
-        {/* Description */}
-        <div className="mb-3">
-          <label className="form-label">Description</label>
-          <textarea
-            className="form-control"
-            rows="3"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          ></textarea>
-        </div>
+          <div className="form-group">
+            <label>Image</label>
+            <input type="file" onChange={handleImageChange} />
+            {preview && (
+              <img src={preview} alt="Preview" className="image-preview" />
+            )}
+          </div>
 
-        {/* Image Upload */}
-        <div className="mb-3">
-          <label className="form-label">Upload Image</label>
-          <input
-            type="file"
-            className="form-control"
-            accept="image/*"
-            onChange={handleImageChange}
-            required={!editing} // Image is required only for new services
-          />
-          {preview && (
-            <img
-              src={preview}
-              alt="Preview"
-              className="img-thumbnail mt-2"
-              width="150"
-            />
-          )}
-        </div>
+          <div className="form-group">
+            <label>Reasons</label>
+            {formData.reasons.map((reason, index) => (
+              <div key={`reason-${index}`} className="nested-form-group">
+                <input
+                  type="text"
+                  placeholder="Title"
+                  value={reason.title}
+                  onChange={(e) =>
+                    handleReasonChange(index, "title", e.target.value)
+                  }
+                  required
+                />
+                <textarea
+                  placeholder="Description"
+                  value={reason.description}
+                  onChange={(e) =>
+                    handleReasonChange(index, "description", e.target.value)
+                  }
+                  required
+                />
+                {formData.reasons.length > 1 && (
+                  <button
+                    type="button"
+                    className="remove-btn"
+                    onClick={() => removeReason(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="add-more-btn" onClick={addReason}>
+              + Add Reason
+            </button>
+          </div>
 
-        {/* Reasons */}
-        <div className="mb-3">
-          <label className="form-label">Reasons</label>
-          {reasons.map((reason, index) => (
-            <div key={index} className="mb-2">
-              <input
-                type="text"
-                className="form-control mb-2"
-                placeholder="Reason Title"
-                value={reason.title}
-                onChange={(e) =>
-                  handleReasonChange(index, "title", e.target.value)
-                }
-                required
-              />
-              <textarea
-                className="form-control"
-                placeholder="Reason Description"
-                value={reason.description}
-                onChange={(e) =>
-                  handleReasonChange(index, "description", e.target.value)
-                }
-                required
-              />
-            </div>
-          ))}
-          <button
-            type="button"
-            className="btn btn-primary mt-2"
-            onClick={addReason}
-          >
-            + Add Reason
-          </button>
-        </div>
+          <div className="form-group">
+            <label>Solutions</label>
+            {formData.solutions.map((solution, index) => (
+              <div key={`solution-${index}`} className="nested-form-group">
+                <input
+                  type="text"
+                  placeholder="Title"
+                  value={solution.title}
+                  onChange={(e) =>
+                    handleSolutionChange(index, "title", e.target.value)
+                  }
+                  required
+                />
+                <textarea
+                  placeholder="Description"
+                  value={solution.description}
+                  onChange={(e) =>
+                    handleSolutionChange(index, "description", e.target.value)
+                  }
+                  required
+                />
+                {formData.solutions.length > 1 && (
+                  <button
+                    type="button"
+                    className="remove-btn"
+                    onClick={() => removeSolution(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              className="add-more-btn"
+              onClick={addSolution}
+            >
+              + Add Solution
+            </button>
+          </div>
 
-        {/* Solutions */}
-        <div className="mb-3">
-          <label className="form-label">Solutions</label>
-          {solutions.map((solution, index) => (
-            <div key={index} className="mb-2">
-              <input
-                type="text"
-                className="form-control mb-2"
-                placeholder="Solution Title"
-                value={solution.title}
-                onChange={(e) =>
-                  handleSolutionChange(index, "title", e.target.value)
-                }
-                required
-              />
-              <textarea
-                className="form-control"
-                placeholder="Solution Description"
-                value={solution.description}
-                onChange={(e) =>
-                  handleSolutionChange(index, "description", e.target.value)
-                }
-                required
-              />
-            </div>
-          ))}
-          <button
-            type="button"
-            className="btn btn-primary mt-2"
-            onClick={addSolution}
-          >
-            + Add Solution
-          </button>
-        </div>
-
-        {/* Submit Button */}
-        <button type="submit" className="btn btn-success">
-          {editing ? "Update Service" : "Create Service"}
-        </button>
-      </form>
+          <div className="form-actions">
+            <button type="submit" className="submit-btn">
+              {editing ? "Update" : "Submit"}
+            </button>
+            <button
+              type="button"
+              className="cancel-btn"
+              onClick={() => setShowForm(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

@@ -1,87 +1,133 @@
-/* General Styling */
-.container {
-  animation: fadeIn 0.5s ease-in-out;
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+.service-form-container {
+  max-width: 800px;
+  margin: 20px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Form Label Styling */
-.form-label {
-  font-weight: bold;
-  color: #333;
-  transition: color 0.3s ease-in-out;
+.service-form-container h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.form-label:hover {
-  color: #007bff;
+.form-group {
+  margin-bottom: 20px;
 }
 
-/* Input and Textarea Styling */
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #34495e;
+}
+
 .form-control {
-  border: 2px solid #ddd;
-  border-radius: 5px;
-  transition: all 0.3s ease-in-out;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  margin-bottom: 10px;
 }
 
 .form-control:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+  border-color: #3498db;
+  outline: none;
 }
 
-/* Button Styling with Animation */
-.btn {
-  transition: all 0.3s ease-in-out;
+.image-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  margin-top: 10px;
+  border-radius: 4px;
+  border: 1px solid #eee;
 }
 
-.btn-primary:hover {
-  transform: scale(1.05);
-  background-color: #0056b3;
-}
-
-.btn-success:hover {
-  transform: scale(1.05);
-  background-color: #28a745;
-}
-
-/* Image Preview Animation */
-.img-thumbnail {
-  animation: fadeIn 0.5s ease-in-out;
-  border-radius: 10px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Fade-in Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Add Button Animation */
-.btn-primary.mt-2 {
+.reason-group, .solution-group {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
   position: relative;
 }
 
-.btn-primary.mt-2::after {
-  content: '\002B'; /* Plus icon */
+.remove-btn {
   position: absolute;
-  right: -15px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 16px;
-  font-weight: bold;
+  top: 5px;
+  right: 5px;
+  background: #e74c3c;
   color: white;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  border: none;
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
-.btn-primary.mt-2:hover::after {
-  opacity: 1;
+.add-more-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.add-more-btn:hover {
+  background: #2980b9;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-btn {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #7f8c8d;
+}
+
+.submit-btn {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #27ae60;
+}
+
+@media (max-width: 600px) {
+  .service-form-container {
+    padding: 15px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .cancel-btn, .submit-btn {
+    width: 100%;
+  }
 }

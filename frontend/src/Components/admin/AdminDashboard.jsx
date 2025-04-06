@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "./../../Views/AdminDashboard.css";
 
@@ -145,6 +145,9 @@ const AdminDashboard = () => {
           </tbody>
         </table>
       </div>
+      <Link to="/service-approvals" className="admin-nav-link">
+        Service Approvals
+      </Link>
     </div>
   );
 };

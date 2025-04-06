@@ -36,6 +36,7 @@ function PaymentSuccess() {
         <button onClick={() => navigate(`/appointments`)}>
           View Appointments
         </button>
+
         <button onClick={() => navigate("/")}>Back to Home</button>
       </div>
     </div>

@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage }).single("image");
 
-// Create Service Detail (Fixed)
+// Create Service Detail (Vet only)
 exports.createServiceDetail = async (req, res, next) => {
   upload(req, res, async (err) => {
     if (err) return next(new createError("File upload failed", 400));
@@ -36,6 +36,7 @@ exports.createServiceDetail = async (req, res, next) => {
         reasons: JSON.parse(reasons),
         solutions: JSON.parse(solutions),
         vet: req.user._id,
+        status: "pending", // Default status
       });
 
       res.status(201).json(newDetail);
@@ -45,7 +46,7 @@ exports.createServiceDetail = async (req, res, next) => {
   });
 };
 
-// Update Service Detail (Fixed)
+// Update Service Detail (Vet only)
 exports.updateServiceDetail = async (req, res, next) => {
   upload(req, res, async (err) => {
     if (err) return next(new createError("File upload failed", 400));
@@ -56,6 +57,7 @@ exports.updateServiceDetail = async (req, res, next) => {
         serviceType,
         reasons: JSON.parse(reasons),
         solutions: JSON.parse(solutions),
+        status: "pending", // Reset to pending when updated
       };
 
       if (req.file) {
@@ -77,6 +79,7 @@ exports.updateServiceDetail = async (req, res, next) => {
   });
 };
 
+// Get approved service details for public view
 exports.getServiceDetails = async (req, res, next) => {
   try {
     let { serviceType } = req.params;
@@ -84,16 +87,91 @@ exports.getServiceDetails = async (req, res, next) => {
       .replace(/-/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    const details = await ServiceDetail.find({ serviceType }).populate(
-      "vet",
-      "name clinic"
-    );
+    const details = await ServiceDetail.find({
+      serviceType,
+      status: "approved",
+    }).populate("vet", "name clinic");
+
     res.json(details);
   } catch (error) {
     next(error);
   }
 };
 
+// Get pending approvals (Admin only)
+exports.getPendingApprovals = async (req, res, next) => {
+  try {
+    const pendingDetails = await ServiceDetail.find({ status: "pending" })
+      .populate("vet", "name email")
+      .sort({ createdAt: 1 });
+
+    res.status(200).json({
+      status: "success",
+      results: pendingDetails.length,
+      data: pendingDetails,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Approve service detail (Admin only)
+exports.approveServiceDetail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { feedback } = req.body;
+
+    const updated = await ServiceDetail.findByIdAndUpdate(
+      id,
+      {
+        status: "approved",
+        feedback: feedback || "Approved by admin",
+      },
+      { new: true }
+    ).populate("vet", "name");
+
+    if (!updated) {
+      return next(new createError("Service detail not found", 404));
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: updated,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reject service detail (Admin only)
+exports.rejectServiceDetail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { feedback } = req.body;
+
+    const updated = await ServiceDetail.findByIdAndUpdate(
+      id,
+      {
+        status: "rejected",
+        feedback: feedback || "Rejected by admin",
+      },
+      { new: true }
+    ).populate("vet", "name");
+
+    if (!updated) {
+      return next(new createError("Service detail not found", 404));
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: updated,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete Service Detail (Vet only)
 exports.deleteServiceDetail = async (req, res, next) => {
   try {
     const deleted = await ServiceDetail.findOneAndDelete({

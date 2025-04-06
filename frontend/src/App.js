@@ -24,6 +24,7 @@ import ESEWAPayment from "./Components/ESEWAPayment";
 import PaymentFailure from "./Components/PaymentFailed";
 import PaymentSuccess from "./Components/PaymentSuccess";
 import AdminDashboard from "./Components/admin/AdminDashboard";
+import ServiceApproval from "./Components/admin/ServiceApproval";
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState("");
@@ -83,6 +84,8 @@ const App = () => {
               )
             }
           />
+
+          <Route path="/service-approvals" element={<ServiceApproval />} />
           {/* Protected Routes */}
           <Route
             path="/appointments"

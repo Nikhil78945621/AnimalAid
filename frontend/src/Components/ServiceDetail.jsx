@@ -3,15 +3,29 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import ServiceForm from "./ServiceForm";
 import "./../Views/ServiceDetail.css";
+import { jwtDecode } from "jwt-decode";
 
 const ServiceDetail = () => {
   const { serviceType } = useParams();
   const [details, setDetails] = useState([]);
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const role = localStorage.getItem("role");
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
+    // Get user info from localStorage
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setCurrentUserId(decoded._id);
+        setUserRole(decoded.role);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+
     const fetchDetails = async () => {
       try {
         const res = await axios.get(
@@ -38,9 +52,9 @@ const ServiceDetail = () => {
 
   return (
     <div className="service-detail-container">
-      <h1>{serviceType} Services</h1>
+      <h1>{serviceType.replace(/-/g, " ")} Services</h1>
 
-      {role === "vet" && (
+      {userRole === "vet" && (
         <button
           className="add-btn"
           onClick={() => {
@@ -54,7 +68,7 @@ const ServiceDetail = () => {
 
       {showForm && (
         <ServiceForm
-          serviceType={serviceType}
+          serviceType={serviceType.replace(/-/g, " ")}
           editing={editing}
           setShowForm={setShowForm}
           setDetails={setDetails}
@@ -64,6 +78,12 @@ const ServiceDetail = () => {
       <div className="details-grid">
         {details.map((detail) => (
           <div key={detail._id} className="detail-card">
+            {detail.vet && (
+              <div className="vet-badge">
+                <span>By Dr. {detail.vet.name}</span>
+                {detail.vet.clinic && <span>{detail.vet.clinic}</span>}
+              </div>
+            )}
             {detail.image && (
               <img
                 src={`http://localhost:8084/${detail.image.replace(
@@ -95,25 +115,29 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
-            {role === "vet" && (
-              <div className="actions">
-                <button
-                  className="edit-btn"
-                  onClick={() => {
-                    setEditing(detail);
-                    setShowForm(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(detail._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
+            {/* Updated condition for showing edit/delete buttons */}
+            {userRole === "vet" &&
+              currentUserId &&
+              detail.vet &&
+              currentUserId === detail.vet._id.toString() && (
+                <div className="actions">
+                  <button
+                    className="edit-btn"
+                    onClick={() => {
+                      setEditing(detail);
+                      setShowForm(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(detail._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
           </div>
         ))}
       </div>
