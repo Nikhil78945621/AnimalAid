@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-
 import "./../Views/serviceform.css";
 
 const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
@@ -12,6 +11,7 @@ const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
     solutions: editing?.solutions || [{ title: "", description: "" }],
   });
   const [preview, setPreview] = useState(editing?.image || null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -95,16 +95,22 @@ const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
         );
       }
 
-      if (editing) {
-        setDetails((prev) =>
-          prev.map((item) =>
-            item._id === response.data._id ? response.data : item
-          )
-        );
-      } else {
-        setDetails((prev) => [...prev, response.data]);
-      }
-      setShowForm(false);
+      setShowSuccessPopup(true);
+
+      //hide the form after 2 seconds
+      // Hide the form after 2 seconds
+      setTimeout(() => {
+        setShowForm(false);
+        if (editing) {
+          setDetails((prev) =>
+            prev.map((item) =>
+              item._id === response.data._id ? response.data : item
+            )
+          );
+        } else {
+          setDetails((prev) => [...prev, response.data]);
+        }
+      }, 2000);
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Failed to submit. Please try again.");
@@ -233,6 +239,16 @@ const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
           </div>
         </form>
       </div>
+
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className="success-popup">
+          <div className="popup-content">
+            <h3>Submitted Successfully!</h3>
+            <p>Your service detail is waiting for admin approval.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

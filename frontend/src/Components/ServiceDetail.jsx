@@ -119,6 +119,7 @@ const ServiceDetail = () => {
             {userRole === "vet" &&
               currentUserId &&
               detail.vet &&
+              detail.vet._id &&
               currentUserId === detail.vet._id.toString() && (
                 <div className="actions">
                   <button
