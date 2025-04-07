@@ -5,6 +5,8 @@ import "./../../Views/AdminApprovals.css";
 const ServiceApproval = () => {
   const [pendingServices, setPendingServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState("");
+  const [showActionMessage, setShowActionMessage] = useState(false);
 
   useEffect(() => {
     const fetchPendingServices = async () => {
@@ -40,11 +42,17 @@ const ServiceApproval = () => {
           },
         }
       );
+      setActionMessage("Service approved successfully!");
+      setShowActionMessage(true);
       setPendingServices(
         pendingServices.filter((service) => service._id !== id)
       );
+      setTimeout(() => setShowActionMessage(false), 3000);
     } catch (error) {
       console.error("Error approving service:", error);
+      setActionMessage("Failed to approve service");
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
     }
   };
 
@@ -60,21 +68,32 @@ const ServiceApproval = () => {
           },
         }
       );
+      setActionMessage("Service rejected successfully!");
+      setShowActionMessage(true);
       setPendingServices(
         pendingServices.filter((service) => service._id !== id)
       );
+      setTimeout(() => setShowActionMessage(false), 3000);
     } catch (error) {
       console.error("Error rejecting service:", error);
+      setActionMessage("Failed to reject service");
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="admin-approval-container">
       <h2>Pending Service Approvals</h2>
+
+      {showActionMessage && (
+        <div className="action-message">{actionMessage}</div>
+      )}
+
       {pendingServices.length === 0 ? (
-        <p>No pending services for approval</p>
+        <p className="no-pending">No pending services for approval</p>
       ) : (
         <div className="approval-list">
           {pendingServices.map((service) => (
@@ -82,6 +101,7 @@ const ServiceApproval = () => {
               <div className="service-header">
                 <h3>{service.serviceType}</h3>
                 <p>Submitted by: {service.vet?.name}</p>
+                <p className="pending-status">Status: Pending Approval</p>
               </div>
 
               <div className="service-content">

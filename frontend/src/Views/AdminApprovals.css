@@ -84,3 +84,30 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+/* Action Message */
+.action-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  z-index: 1000;
+  animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+}
+
+.pending-status {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}

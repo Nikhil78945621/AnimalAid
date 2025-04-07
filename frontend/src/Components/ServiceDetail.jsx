@@ -12,9 +12,9 @@ const ServiceDetail = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userRole, setUserRole] = useState("");
+  const [showPendingMessage, setShowPendingMessage] = useState(false);
 
   useEffect(() => {
-    // Get user info from localStorage
     const token = localStorage.getItem("token");
     if (token) {
       try {
@@ -37,7 +37,7 @@ const ServiceDetail = () => {
       }
     };
     fetchDetails();
-  }, [serviceType]);
+  }, [serviceType, showForm]);
 
   const handleDelete = async (id) => {
     try {
@@ -72,18 +72,31 @@ const ServiceDetail = () => {
           editing={editing}
           setShowForm={setShowForm}
           setDetails={setDetails}
+          setShowPendingMessage={setShowPendingMessage}
         />
+      )}
+
+      {showPendingMessage && (
+        <div className="pending-message">
+          <p>Your submission is waiting for admin approval.</p>
+          <button onClick={() => setShowPendingMessage(false)}>×</button>
+        </div>
       )}
 
       <div className="details-grid">
         {details.map((detail) => (
           <div key={detail._id} className="detail-card">
+            {detail.status === "pending" && (
+              <div className="pending-badge">⏳ Waiting for admin approval</div>
+            )}
+
             {detail.vet && (
               <div className="vet-badge">
                 <span>By Dr. {detail.vet.name}</span>
                 {detail.vet.clinic && <span>{detail.vet.clinic}</span>}
               </div>
             )}
+
             {detail.image && (
               <img
                 src={`http://localhost:8084/${detail.image.replace(
@@ -97,6 +110,7 @@ const ServiceDetail = () => {
                 }}
               />
             )}
+
             <div className="content-section">
               <h3>Common Reasons</h3>
               {detail.reasons.map((reason, i) => (
@@ -106,6 +120,7 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
+
             <div className="content-section">
               <h3>Our Solutions</h3>
               {detail.solutions.map((solution, i) => (
@@ -115,7 +130,7 @@ const ServiceDetail = () => {
                 </div>
               ))}
             </div>
-            {/* Updated condition for showing edit/delete buttons */}
+
             {userRole === "vet" &&
               currentUserId &&
               detail.vet &&
