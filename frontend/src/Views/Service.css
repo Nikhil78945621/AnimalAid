@@ -102,3 +102,60 @@
 .book-btn:hover {
   background-color: #1b4332;
 }
+
+/* Appointment Section */
+.appointmentSection {
+  margin-top: 60px;
+  padding: 30px 20px;
+  background: #d8f3dc;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.appointmentInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.calendar-icon {
+  font-size: 28px;
+  color: #2d6a4f;
+}
+
+.appointment-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #2d6a4f;
+  margin-bottom: 4px;
+}
+
+.appointment-text {
+  font-size: 12px;
+  color: #5c8374;
+}
+
+.appointmentButtons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.book-btn {
+  padding: 10px 18px;
+  background-color: #2d6a4f;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.book-btn:hover {
+  background-color: #1b4332;
+}

@@ -1,6 +1,6 @@
 /* VetHomeVisitDashboard.css */
 .vet-home-visit-dashboard {
-  padding: 120px;
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -12,12 +12,31 @@
   color: #333;
 }
 
-.map-container {
+.dashboard-container {
+  display: flex;
+  gap: 20px;
+}
+
+.map-wrapper {
+  position: relative;
   height: 500px;
-  width: 100%;
+  width: 70%;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.request-list {
+  padding: 10px;
+  background: #f5f5f5;
+  width: 30%;
+  overflow-y: auto;
+  height: 500px;
+}
+
+.request-item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
 }
 
 /* Leaflet Popup Styling */
@@ -60,7 +79,11 @@
     padding: 10px;
   }
 
-  .map-container {
+  .map-wrapper {
+    height: 400px;
+  }
+
+  .request-list {
     height: 400px;
   }
 }
@@ -70,7 +93,11 @@
     font-size: 20px;
   }
 
-  .map-container {
+  .map-wrapper {
+    height: 300px;
+  }
+
+  .request-list {
     height: 300px;
   }
 }

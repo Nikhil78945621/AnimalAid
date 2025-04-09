@@ -25,6 +25,8 @@ import PaymentFailure from "./Components/PaymentFailed";
 import PaymentSuccess from "./Components/PaymentSuccess";
 import AdminDashboard from "./Components/admin/AdminDashboard";
 import ServiceApproval from "./Components/admin/ServiceApproval";
+import UserHomeVisitRequests from "./Components/UserHomeVisitRequests";
+import VetChat from "./Components/VetChat";
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState("");
@@ -60,6 +62,7 @@ const App = () => {
           <Route path="/services/:serviceType" element={<ServiceDetail />} />
           <Route path="/home-visit" element={<HomeVisitRequestForm />} />
           <Route path="/vet-home-visit" element={<VetHomeVisitDashboard />} />
+          <Route path="/my-requests" element={<UserHomeVisitRequests />} />
           <Route path="/vet-appointments" element={<VetAppointments />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
@@ -69,6 +72,8 @@ const App = () => {
               isAuthenticated ? <ESEWAPayment /> : <Navigate to="/login" />
             }
           />
+          <Route path="/vet-chat" element={<VetChat />} />
+
           {/* Admin Dashboard Route */}
           <Route
             path="/admin-dashboard"

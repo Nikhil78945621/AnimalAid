@@ -8,18 +8,21 @@ const vetRoutes = require("./routes/VetRoutes");
 const homeVisitRoutes = require("./routes/homeVisitRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const WebSocket = require("ws");
 
 const app = express();
 
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000", // Frontend origin
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Routes
 app.use("/api/auth", authRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/vet", vetRoutes);
@@ -47,8 +50,31 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Server
+// HTTP Server
 const PORT = 8084;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// WebSocket Server
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws) => {
+  console.log("New WebSocket client connected");
+
+  ws.on("message", (message) => {
+    console.log(`Received message: ${message}`);
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket client disconnected");
+  });
+
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error);
+  });
+});
+
+global.wss = wss;
+
+module.exports = { app, wss };

@@ -7,6 +7,10 @@ const homeVisitSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  veterinarian: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   petType: {
     type: String,
     required: true,
@@ -24,17 +28,38 @@ const homeVisitSchema = new mongoose.Schema({
   address: String,
   status: {
     type: String,
-    enum: ["pending", "accepted", "completed"],
+    enum: ["pending", "accepted", "in-progress", "completed", "cancelled"],
     default: "pending",
   },
+  priority: {
+    type: String,
+    enum: ["low", "medium", "high"],
+    required: true,
+  },
+  eta: Number,
+  chatHistory: [
+    {
+      sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      message: String,
+      timestamp: Date,
+    },
+  ],
+  statusHistory: [
+    {
+      status: String,
+      timestamp: Date,
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
   },
+  acceptedAt: Date,
 });
 
-// Add 2dsphere index for geospatial queries
 homeVisitSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("HomeVisitRequest", homeVisitSchema);
-ports = mongoose.model("HomeVisitRequest", homeVisitSchema);
