@@ -23,6 +23,12 @@ const userSchema = new mongoose.Schema({
   speciality: String,
   phone: String,
   address: String,
+  postalCode: {
+    type: String,
+    required: function() {
+      return this.role === "vet"; // Required for vets only
+    },
+  },
   clinic: String,
   fee: {
     type: Number,
@@ -36,7 +42,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "UTC",
   },
-  // Add notifications array
   notifications: [
     {
       message: {
@@ -58,7 +63,17 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  location: {
+    type: {
+      type: String,
+      default: "Point",
+      enum: ["Point"],
+    },
+    coordinates: [Number], // Optional: vets can set this via postal code geocoding
+  },
 });
+
+userSchema.index({ location: "2dsphere" });
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;

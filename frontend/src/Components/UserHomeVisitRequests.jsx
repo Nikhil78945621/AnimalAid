@@ -8,7 +8,6 @@ const UserHomeVisitRequests = () => {
   const [requests, setRequests] = useState([]);
   const [chatMessages, setChatMessages] = useState({});
   const [newMessage, setNewMessage] = useState("");
-  const [ws, setWs] = useState(null);
   const wsRef = useRef(null);
   const retryCountRef = useRef(0);
   const navigate = useNavigate();
@@ -26,7 +25,9 @@ const UserHomeVisitRequests = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const fetchedRequests = response.data;
+      const fetchedRequests = Array.isArray(response.data.data)
+        ? response.data.data
+        : [];
       setRequests(fetchedRequests);
       const initialChat = {};
       fetchedRequests.forEach((req) => {
@@ -48,6 +49,7 @@ const UserHomeVisitRequests = () => {
             (error.response?.data?.message || "Server error")
         );
       }
+      setRequests([]);
     }
   };
 
@@ -59,7 +61,6 @@ const UserHomeVisitRequests = () => {
 
     const websocket = new WebSocket("ws://localhost:8084");
     wsRef.current = websocket;
-    setWs(websocket);
 
     websocket.onopen = () => {
       console.log("WebSocket connected (User)");
@@ -93,7 +94,6 @@ const UserHomeVisitRequests = () => {
 
     websocket.onclose = () => {
       console.log("WebSocket disconnected (User)");
-      setWs(null);
       wsRef.current = null;
       const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 16000);
       retryCountRef.current += 1;
@@ -131,7 +131,7 @@ const UserHomeVisitRequests = () => {
         console.log("WebSocket closed on unmount (User)");
       }
     };
-  }, [navigate]);
+  }, [navigate, connectWebSocket, fetchRequests]);
 
   const handleSendMessage = async (requestId) => {
     if (!newMessage.trim()) return;
@@ -203,22 +203,32 @@ const UserHomeVisitRequests = () => {
                 <h4 className="chat-title">Chat with Vet</h4>
                 <div className="chat-messages">
                   {(chatMessages[request._id] || request.chatHistory || []).map(
-                    (msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`message ${
-                          msg.sender._id === request.petOwner
-                            ? "sent"
-                            : "received"
-                        }`}
-                      >
-                        <strong>{msg.sender.name || "Unknown"}: </strong>
-                        {msg.message}
-                        <span className="message-time">
-                          {new Date(msg.timestamp).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    )
+                    (msg, idx) => {
+                      let senderName = "Unknown";
+                      let isSent = false;
+                      if (typeof msg.sender === "string") {
+                        senderName =
+                          msg.sender === request.petOwner._id
+                            ? request.petOwner.name
+                            : request.veterinarian?.name || "Unknown";
+                        isSent = msg.sender === request.petOwner._id;
+                      } else if (msg.sender?._id) {
+                        senderName = msg.sender.name;
+                        isSent = msg.sender._id === request.petOwner._id;
+                      }
+                      return (
+                        <div
+                          key={idx}
+                          className={`message ${isSent ? "sent" : "received"}`}
+                        >
+                          <strong>{senderName}: </strong>
+                          {msg.message}
+                          <span className="message-time">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      );
+                    }
                   )}
                 </div>
                 <div className="chat-input-container">

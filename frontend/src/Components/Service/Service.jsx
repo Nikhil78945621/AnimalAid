@@ -8,7 +8,7 @@ import {
   FaVial,
   FaEye,
 } from "react-icons/fa";
-import "./../Views/Service.css";
+import "./../../Views/Service.css";
 import { FaCalendarAlt } from "react-icons/fa";
 
 const services = [
@@ -76,7 +76,7 @@ const Service = () => {
           </div>
         </div>
         <div className="appointmentButtons">
-          <Link to="/appointments" className="book-btn">
+          <Link to="/appointments/new" className="book-btn">
             Open Appointments
           </Link>
           <Link to="/appointments" className="read-more">

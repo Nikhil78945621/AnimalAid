@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import ServiceForm from "./ServiceForm";
-import "./../Views/ServiceDetail.css";
+import "./../../Views/ServiceDetail.css";
 import { jwtDecode } from "jwt-decode";
 
 const ServiceDetail = () => {
@@ -110,16 +110,6 @@ const ServiceDetail = () => {
                 }}
               />
             )}
-
-            <div className="content-section">
-              <h3>Common Reasons</h3>
-              {detail.reasons.map((reason, i) => (
-                <div key={i} className="reason">
-                  <h4>{reason.title}</h4>
-                  <p>{reason.description}</p>
-                </div>
-              ))}
-            </div>
 
             <div className="content-section">
               <h3>Our Solutions</h3>

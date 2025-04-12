@@ -11,7 +11,7 @@ const Payment = () => {
     product_service_charge: "0",
     product_delivery_charge: "0",
     product_code: "EPAYTEST",
-    success_url: "http://localhost:3000/paymentsuccess",
+    success_url: "http://localhost:3000/payment/success",
     failed_url: "http://localhost:3000/paymentfailed",
     signed_field_names: "total_amount,transaction_uuid,product_code",
     signature: "",

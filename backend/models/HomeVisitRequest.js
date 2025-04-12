@@ -1,65 +1,106 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
 
-const homeVisitSchema = new mongoose.Schema({
-  petOwner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  veterinarian: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  petType: {
-    type: String,
-    required: true,
-    enum: ["Cow", "Buffalo", "Horse", "Other"],
-  },
-  description: String,
-  location: {
-    type: {
+const homeVisitRequestSchema = new mongoose.Schema(
+  {
+    petOwner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "A request must have a pet owner"],
+    },
+    veterinarian: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    petType: {
       type: String,
-      default: "Point",
-      enum: ["Point"],
+      required: [true, "Pet type is required"],
+      enum: ["Cow", "Buffalo", "Horse", "Other"],
     },
-    coordinates: [Number],
-  },
-  address: String,
-  status: {
-    type: String,
-    enum: ["pending", "accepted", "in-progress", "completed", "cancelled"],
-    default: "pending",
-  },
-  priority: {
-    type: String,
-    enum: ["low", "medium", "high"],
-    required: true,
-  },
-  eta: Number,
-  chatHistory: [
-    {
-      sender: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+      trim: true,
+    },
+    location: {
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
       },
-      message: String,
-      timestamp: Date,
+      coordinates: {
+        type: [Number],
+        required: [true, "Coordinates are required"],
+      },
     },
-  ],
-  statusHistory: [
-    {
-      status: String,
-      timestamp: Date,
+    address: {
+      type: String,
+      required: [true, "Address is required"],
+      trim: true,
     },
-  ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "completed", "cancelled"],
+      default: "pending",
+    },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+      required: [true, "Priority is required"],
+    },
+    acceptedAt: {
+      type: Date,
+    },
+    eta: {
+      type: Number,
+    },
+    chatHistory: [
+      {
+        sender: {
+          _id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+          name: {
+            type: String,
+            required: true,
+          },
+        },
+        message: {
+          type: String,
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "completed", "cancelled"],
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
-  acceptedAt: Date,
-});
+  {
+    timestamps: true,
+  }
+);
 
-homeVisitSchema.index({ location: "2dsphere" });
+homeVisitRequestSchema.index({ location: "2dsphere" });
 
-module.exports = mongoose.model("HomeVisitRequest", homeVisitSchema);
+const HomeVisitRequest = mongoose.model(
+  "HomeVisitRequest",
+  homeVisitRequestSchema
+);
+
+module.exports = HomeVisitRequest;

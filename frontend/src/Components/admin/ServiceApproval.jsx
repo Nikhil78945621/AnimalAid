@@ -115,16 +115,6 @@ const ServiceApproval = () => {
                   />
                 )}
 
-                <div className="reasons-section">
-                  <h4>Reasons:</h4>
-                  {service.reasons.map((reason, index) => (
-                    <div key={index} className="reason-item">
-                      <h5>{reason.title}</h5>
-                      <p>{reason.description}</p>
-                    </div>
-                  ))}
-                </div>
-
                 <div className="solutions-section">
                   <h4>Solutions:</h4>
                   {service.solutions.map((solution, index) => (

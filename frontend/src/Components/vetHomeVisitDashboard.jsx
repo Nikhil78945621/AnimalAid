@@ -8,7 +8,6 @@ import "./../Views/VetHomeVisitDashboard.css";
 
 const VetHomeVisitDashboard = () => {
   const [requests, setRequests] = useState([]);
-  const [ws, setWs] = useState(null);
   const mapRef = useRef(null);
   const wsRef = useRef(null);
   const retryCountRef = useRef(0);
@@ -24,6 +23,13 @@ const VetHomeVisitDashboard = () => {
         }
       );
       console.log("Fetched requests (Vet Dashboard):", response.data.data);
+      response.data.data.forEach((req) => {
+        if (req.distance === null || req.distance === undefined) {
+          console.warn(
+            `Request ${req._id} has invalid distance: ${req.distance}`
+          );
+        }
+      });
       setRequests(response.data.data);
       if (mapRef.current) {
         mapRef.current.invalidateSize();
@@ -52,7 +58,6 @@ const VetHomeVisitDashboard = () => {
 
     const websocket = new WebSocket("ws://localhost:8084");
     wsRef.current = websocket;
-    setWs(websocket);
 
     websocket.onopen = () => {
       console.log("WebSocket connected (Vet)");
@@ -79,7 +84,6 @@ const VetHomeVisitDashboard = () => {
 
     websocket.onclose = () => {
       console.log("WebSocket disconnected (Vet)");
-      setWs(null);
       wsRef.current = null;
       const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 16000);
       retryCountRef.current += 1;
@@ -117,7 +121,7 @@ const VetHomeVisitDashboard = () => {
         console.log("WebSocket closed on unmount (Vet)");
       }
     };
-  }, [navigate]);
+  }, [navigate, connectWebSocket, fetchRequests]);
 
   const handleAccept = async (id) => {
     const request = requests.find((r) => r._id === id);
@@ -165,58 +169,91 @@ const VetHomeVisitDashboard = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="© OpenStreetMap contributors"
             />
-            {requests.map((request) => (
-              <Marker
-                key={request._id}
-                position={[
-                  request.location.coordinates[1],
-                  request.location.coordinates[0],
-                ]}
-              >
-                <Popup>
-                  <h3>{request.petType}</h3>
-                  <p>Priority: {request.priority}</p>
-                  <p>{request.description}</p>
-                  <p>Distance: {request.distance.toFixed(2)} km</p>
-                  <p>ETA: {request.eta} minutes</p>
-                  <p>Status: {request.status}</p>
-                  {request.status === "pending" && (
+            {requests
+              .filter(
+                (request) =>
+                  request.status === "pending" &&
+                  request.isEligible &&
+                  typeof request.distance === "number" &&
+                  request.distance <= 100
+              )
+              .map((request) => (
+                <Marker
+                  key={request._id}
+                  position={[
+                    request.location.coordinates[1],
+                    request.location.coordinates[0],
+                  ]}
+                >
+                  <Popup>
+                    <h3>{request.petType}</h3>
+                    <p>Priority: {request.priority}</p>
+                    <p>{request.description}</p>
+                    <p>
+                      Distance:{" "}
+                      {typeof request.distance === "number"
+                        ? request.distance.toFixed(2)
+                        : "N/A"}{" "}
+                      km
+                    </p>
+                    <p>
+                      ETA:{" "}
+                      {typeof request.eta === "number" && request.eta > 0
+                        ? request.eta
+                        : "N/A"}{" "}
+                      minutes
+                    </p>
+                    <p>Status: {request.status}</p>
                     <button
                       onClick={() => handleAccept(request._id)}
                       style={{ padding: "5px 10px", marginTop: "10px" }}
                     >
                       Accept Request
                     </button>
-                  )}
-                  {request.status === "accepted" && (
-                    <p>
-                      Chat available on the{" "}
-                      <a href="/vet-chat">Vet Chat page</a>.
-                    </p>
-                  )}
-                </Popup>
-              </Marker>
-            ))}
+                  </Popup>
+                </Marker>
+              ))}
           </MapContainer>
         </div>
         <div
           className="request-list"
           style={{ width: "30%", overflowY: "auto", height: "500px" }}
         >
-          {requests.map((request) => (
-            <div
-              key={request._id}
-              className="request-item"
-              style={{ padding: "10px", borderBottom: "1px solid #ccc" }}
-            >
-              <h4>
-                {request.petType} - {request.priority}
-              </h4>
-              <p>Distance: {request.distance.toFixed(2)} km</p>
-              <p>ETA: {request.eta} minutes</p>
-              <p>Status: {request.status}</p>
-            </div>
-          ))}
+          {requests.length === 0 ? (
+            <p>No requests available within 100 km.</p>
+          ) : (
+            requests.map((request) => (
+              <div
+                key={request._id}
+                className="request-item"
+                style={{ padding: "10px", borderBottom: "1px solid #ccc" }}
+              >
+                <h4>
+                  {request.petType} - {request.priority}
+                </h4>
+                <p>
+                  Distance:{" "}
+                  {typeof request.distance === "number"
+                    ? request.distance.toFixed(2)
+                    : "N/A"}{" "}
+                  km
+                </p>
+                <p>
+                  ETA:{" "}
+                  {typeof request.eta === "number" && request.eta > 0
+                    ? request.eta
+                    : "N/A"}{" "}
+                  minutes
+                </p>
+                <p>Status: {request.status}</p>
+                {request.status === "accepted" && (
+                  <p>
+                    Chat available on the <a href="/vet-chat">Vet Chat page</a>.
+                  </p>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

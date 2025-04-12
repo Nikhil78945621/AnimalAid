@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./../Views/serviceform.css";
+import "./../../Views/serviceform.css";
 
 const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
   const [formData, setFormData] = useState({
@@ -145,43 +145,6 @@ const ServiceForm = ({ serviceType, setShowForm, setDetails, editing }) => {
             {preview && (
               <img src={preview} alt="Preview" className="image-preview" />
             )}
-          </div>
-
-          <div className="form-group">
-            <label>Reasons</label>
-            {formData.reasons.map((reason, index) => (
-              <div key={`reason-${index}`} className="nested-form-group">
-                <input
-                  type="text"
-                  placeholder="Title"
-                  value={reason.title}
-                  onChange={(e) =>
-                    handleReasonChange(index, "title", e.target.value)
-                  }
-                  required
-                />
-                <textarea
-                  placeholder="Description"
-                  value={reason.description}
-                  onChange={(e) =>
-                    handleReasonChange(index, "description", e.target.value)
-                  }
-                  required
-                />
-                {formData.reasons.length > 1 && (
-                  <button
-                    type="button"
-                    className="remove-btn"
-                    onClick={() => removeReason(index)}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-            <button type="button" className="add-more-btn" onClick={addReason}>
-              + Add Reason
-            </button>
           </div>
 
           <div className="form-group">

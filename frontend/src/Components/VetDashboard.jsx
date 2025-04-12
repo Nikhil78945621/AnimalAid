@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import VetAppointments from "./VetAppointment";
+// import VetAppointments from "./VetAppointment"; // Commented out as unused
 import "./../Views/VetDashboard.css";
 
 const VetDashboard = () => {
@@ -8,6 +8,7 @@ const VetDashboard = () => {
     fee: "",
     speciality: "",
     address: "",
+    postalCode: "",
     clinic: "",
   });
   const [loading, setLoading] = useState(true);
@@ -35,6 +36,8 @@ const VetDashboard = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+
         const profileResponse = await axios.get(
           "http://localhost:8084/api/auth/profile",
           { headers: { Authorization: `Bearer ${token}` } }
@@ -45,17 +48,33 @@ const VetDashboard = () => {
         );
 
         setVetData({
-          fee: profileResponse.data.fee || "",
-          speciality: profileResponse.data.speciality || "",
-          address: profileResponse.data.address || "",
-          clinic: profileResponse.data.clinic || "",
+          fee: profileResponse.data.data?.fee || profileResponse.data.fee || "",
+          speciality:
+            profileResponse.data.data?.speciality ||
+            profileResponse.data.speciality ||
+            "",
+          address:
+            profileResponse.data.data?.address ||
+            profileResponse.data.address ||
+            "",
+          postalCode:
+            profileResponse.data.data?.postalCode ||
+            profileResponse.data.postalCode ||
+            "",
+          clinic:
+            profileResponse.data.data?.clinic ||
+            profileResponse.data.clinic ||
+            "",
         });
 
         if (availabilityResponse.data) {
           setAvailability({
-            workingHours: availabilityResponse.data.workingHours,
-            appointmentDuration: availabilityResponse.data.appointmentDuration,
-            timezone: availabilityResponse.data.timezone,
+            workingHours:
+              availabilityResponse.data.workingHours ||
+              availability.workingHours,
+            appointmentDuration:
+              availabilityResponse.data.appointmentDuration || 60,
+            timezone: availabilityResponse.data.timezone || "UTC",
           });
         }
       } catch (error) {
@@ -66,6 +85,7 @@ const VetDashboard = () => {
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle updating professional profile
@@ -73,12 +93,18 @@ const VetDashboard = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
       await axios.patch("http://localhost:8084/api/auth/profile", vetData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
+      alert(
+        "Failed to update profile: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -94,6 +120,8 @@ const VetDashboard = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
       await axios.put(
         "http://localhost:8084/api/vet/availability",
         {
@@ -106,6 +134,10 @@ const VetDashboard = () => {
       alert("Availability updated successfully!");
     } catch (error) {
       console.error("Error updating availability:", error);
+      alert(
+        "Failed to update availability: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -114,6 +146,8 @@ const VetDashboard = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
       await axios.post(
         "http://localhost:8084/api/vet/block-slot",
         blockSlotData,
@@ -122,9 +156,13 @@ const VetDashboard = () => {
         }
       );
       alert("Slot blocked successfully!");
-      setBlockSlotData({ start: "", end: "", reason: "" }); // Reset form
+      setBlockSlotData({ start: "", end: "", reason: "" });
     } catch (error) {
       console.error("Error blocking slot:", error);
+      alert(
+        "Failed to block slot: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -178,6 +216,21 @@ const VetDashboard = () => {
               />
             </label>
 
+            <label>
+              Postal Code:
+              <input
+                type="text"
+                value={vetData.postalCode}
+                onChange={(e) =>
+                  setVetData({ ...vetData, postalCode: e.target.value })
+                }
+                required
+                placeholder="e.g., 44600"
+              />
+            </label>
+          </div>
+
+          <div className="form-row">
             <label>
               Clinic Name:
               <input

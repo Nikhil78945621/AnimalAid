@@ -20,6 +20,7 @@ const HomeVisitRequestForm = () => {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleMapClick = async (latlng) => {
     setPosition(latlng);
@@ -27,24 +28,37 @@ const HomeVisitRequestForm = () => {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`
       );
+      if (!response.ok) {
+        throw new Error(`Geocoding failed with status: ${response.status}`);
+      }
       const data = await response.json();
       setAddress(data.display_name || "Address not found");
     } catch (error) {
-      console.error("Geocoding error:", error);
-      setAddress("Failed to fetch address");
+      console.error("Geocoding error:", error.message);
+      setAddress(
+        `Lat: ${latlng.lat}, Lon: ${latlng.lng} (Address unavailable)`
+      );
+      setError("Could not fetch address. Using coordinates instead.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please log in to submit a request.");
+      setError("Please log in to submit a request.");
       return;
     }
 
     if (!position) {
-      alert("Please select a location on the map.");
+      setError("Please select a location on the map.");
+      return;
+    }
+
+    if (!description.trim()) {
+      setError("Please provide a description of the emergency.");
       return;
     }
 
@@ -52,9 +66,10 @@ const HomeVisitRequestForm = () => {
       petType,
       description,
       coordinates: [position.lng, position.lat],
-      address,
+      address: address || `Lat: ${position.lat}, Lon: ${position.lng}`,
       priority,
     };
+
     console.log("Submitting payload:", payload);
 
     setLoading(true);
@@ -69,23 +84,17 @@ const HomeVisitRequestForm = () => {
           },
         }
       );
-      console.log("Submission response:", response.data);
-      alert("Request submitted successfully! Check 'My Requests' to track it.");
-      // Reset form
+      alert(response.data.message);
       setPosition(null);
       setAddress("");
       setPetType("Cow");
       setDescription("");
       setPriority("medium");
     } catch (error) {
-      console.error(
-        "Submit error:",
-        error.response?.data || error.message,
-        error.response?.status
-      );
-      alert(
+      console.error("Submit error:", error.response?.data || error.message);
+      setError(
         error.response?.data?.message ||
-          "Failed to submit request. Check your login or server status."
+          "Failed to submit request. Please try again."
       );
     } finally {
       setLoading(false);
@@ -95,6 +104,7 @@ const HomeVisitRequestForm = () => {
   return (
     <div className="home-visit-form">
       <h2>Emergency Home Visit Request</h2>
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Pet Type:</label>
@@ -132,7 +142,7 @@ const HomeVisitRequestForm = () => {
         <div className="map-container">
           <p>Click on the map to select location:</p>
           <MapContainer
-            center={[27.7172, 85.324]} // Default Kathmandu coordinates
+            center={[27.7172, 85.324]}
             zoom={7}
             style={{ height: "300px", width: "100%" }}
           >
