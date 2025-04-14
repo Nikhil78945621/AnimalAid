@@ -39,7 +39,7 @@ const homeVisitRequestSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "completed", "cancelled"],
+      enum: ["pending", "accepted", "completed", "canceled"],
       default: "pending",
     },
     priority: {
@@ -81,7 +81,7 @@ const homeVisitRequestSchema = new mongoose.Schema(
       {
         status: {
           type: String,
-          enum: ["pending", "accepted", "completed", "cancelled"],
+          enum: ["pending", "accepted", "completed", "canceled"], // Changed to "canceled"
           required: true,
         },
         timestamp: {

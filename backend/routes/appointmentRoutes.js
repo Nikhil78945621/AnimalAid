@@ -70,7 +70,7 @@ router.get(
   appointmentController.getUserNotifications
 );
 
-router.get(
+router.patch(
   "/notifications/mark-read",
   protect,
   appointmentController.markNotificationsAsRead

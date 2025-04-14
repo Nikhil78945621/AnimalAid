@@ -456,3 +456,67 @@ exports.sendChatMessage = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.cancelRequest = async (req, res, next) => {
+  try {
+    const { id: requestId } = req.params;
+    const userId = req.user._id;
+
+    const request = await HomeVisitRequest.findOne({
+      _id: requestId,
+      petOwner: userId,
+      status: { $in: ["pending", "accepted"] },
+    });
+
+    if (!request) {
+      return next(
+        new createError(
+          "Request not found, not owned by you, or cannot be canceled",
+          404
+        )
+      );
+    }
+
+    const updatedRequest = await HomeVisitRequest.findByIdAndUpdate(
+      requestId,
+      {
+        $set: { status: "canceled" }, // Use "canceled"
+        $push: {
+          statusHistory: { status: "canceled", timestamp: new Date() }, // Use "canceled"
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    // Notify the vet if the request was accepted
+    if (request.veterinarian) {
+      const message = `The home visit request for ${request.petType} at ${
+        request.address
+      } has been canceled by the pet owner on ${moment().format(
+        "MMMM Do YYYY, h:mm a"
+      )}`;
+
+      await User.findByIdAndUpdate(request.veterinarian, {
+        $push: {
+          notifications: {
+            message,
+            type: "home-visit",
+            read: false,
+          },
+        },
+      });
+    }
+
+    broadcastUpdate({ type: "REQUEST_UPDATED", data: updatedRequest });
+
+    res.status(200).json({
+      status: "success",
+      data: updatedRequest,
+      message: "Request canceled successfully.",
+    });
+  } catch (error) {
+    console.error("Cancel request error:", error);
+    next(error);
+  }
+};
+// ... (rest of the controller code)

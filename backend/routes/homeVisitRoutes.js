@@ -8,6 +8,7 @@ const {
   completeRequest,
   getUserRequests,
   sendChatMessage,
+  cancelRequest,
 } = require("../controllers/homeVisitController");
 
 router.post("/", protect, createRequest);
@@ -16,5 +17,6 @@ router.get("/vet", protect, getVetRequests);
 router.patch("/:id/accept", protect, acceptRequest);
 router.patch("/:id/complete", protect, completeRequest);
 router.post("/send-message", protect, sendChatMessage);
+router.patch("/:id/cancel", protect, cancelRequest);
 
 module.exports = router;

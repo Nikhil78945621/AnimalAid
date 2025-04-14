@@ -106,33 +106,6 @@ const UserHomeVisitRequests = () => {
     };
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const decodedToken = jwtDecode(token);
-    if (decodedToken.exp * 1000 < Date.now()) {
-      localStorage.removeItem("token");
-      navigate("/login");
-      return;
-    }
-
-    connectWebSocket();
-    fetchRequests();
-
-    return () => {
-      if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
-        wsRef.current.onclose = null;
-      } else if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-        console.log("WebSocket closed on unmount (User)");
-      }
-    };
-  }, [navigate, connectWebSocket, fetchRequests]);
-
   const handleSendMessage = async (requestId) => {
     if (!newMessage.trim()) return;
     const token = localStorage.getItem("token");
@@ -173,6 +146,65 @@ const UserHomeVisitRequests = () => {
     }
   };
 
+  const handleCancelRequest = async (requestId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expired. Please log in again.");
+      navigate("/login");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to cancel this request?")) {
+      try {
+        const response = await axios.patch(
+          `http://localhost:8084/api/home-visits/${requestId}/cancel`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        alert("Request canceled successfully.");
+        fetchRequests(); // Refresh the request list
+      } catch (error) {
+        console.error(
+          "Cancel request error:",
+          error.response?.data || error.message
+        );
+        alert(
+          error.response?.data?.message ||
+            "Failed to cancel request. Please try again."
+        );
+      }
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const decodedToken = jwtDecode(token);
+    if (decodedToken.exp * 1000 < Date.now()) {
+      localStorage.removeItem("token");
+      navigate("/login");
+      return;
+    }
+
+    connectWebSocket();
+    fetchRequests();
+
+    return () => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
+        wsRef.current.onclose = null;
+      } else if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+        console.log("WebSocket closed on unmount (User)");
+      }
+    };
+  }, [navigate]);
+
   return (
     <div className="user-home-visits-container">
       <h2 className="page-title">Your Home Visit Requests</h2>
@@ -191,12 +223,32 @@ const UserHomeVisitRequests = () => {
               <strong>Address:</strong> {request.address}
             </p>
             <p className="request-detail">
-              <strong>Status:</strong> {request.status}
+              <strong>Status:</strong>{" "}
+              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
             </p>
             {request.veterinarian && (
               <p className="request-detail">
                 <strong>Vet:</strong> {request.veterinarian.name}
               </p>
+            )}
+            {/* Cancel Button */}
+            {(request.status === "pending" ||
+              request.status === "accepted") && (
+              <button
+                onClick={() => handleCancelRequest(request._id)}
+                className="cancel-button"
+                style={{
+                  backgroundColor: "#ff4d4d",
+                  color: "white",
+                  padding: "8px 16px",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginTop: "10px",
+                }}
+              >
+                Cancel Request
+              </button>
             )}
             {request.status === "accepted" && (
               <div className="chat-section">

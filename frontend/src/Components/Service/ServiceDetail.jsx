@@ -92,8 +92,7 @@ const ServiceDetail = () => {
 
             {detail.vet && (
               <div className="vet-badge">
-                <span>By Dr. {detail.vet.name}</span>
-                {detail.vet.clinic && <span>{detail.vet.clinic}</span>}
+                <span>Dr. {detail.vet.name}</span>
               </div>
             )}
 

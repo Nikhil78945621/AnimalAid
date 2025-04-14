@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   postalCode: {
     type: String,
     required: function() {
-      return this.role === "vet"; // Required for vets only
+      return this.role === "vet";
     },
   },
   clinic: String,
@@ -44,10 +44,7 @@ const userSchema = new mongoose.Schema({
   },
   notifications: [
     {
-      message: {
-        type: String,
-        required: true,
-      },
+      message: String,
       type: {
         type: String,
         enum: ["appointment", "home-visit", "system"],
@@ -69,7 +66,10 @@ const userSchema = new mongoose.Schema({
       default: "Point",
       enum: ["Point"],
     },
-    coordinates: [Number], // Optional: vets can set this via postal code geocoding
+    coordinates: {
+      type: [Number],
+      default: [0, 0], // Default coordinates if not provided
+    },
   },
 });
 
