@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import "./../Views/homevisit.css";
 
+// Utility function for delay with jitter
+const delay = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms + Math.random() * 100));
+
+// MapClickHandler component
 const MapClickHandler = ({ onLocationSelect }) => {
   useMapEvents({
     click(e) {
@@ -16,31 +21,63 @@ const MapClickHandler = ({ onLocationSelect }) => {
 const HomeVisitRequestForm = () => {
   const [position, setPosition] = useState(null);
   const [address, setAddress] = useState("");
+  const [manualAddress, setManualAddress] = useState("");
   const [petType, setPetType] = useState("Cow");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [loading, setLoading] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleMapClick = async (latlng) => {
-    setPosition(latlng);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`
-      );
-      if (!response.ok) {
-        throw new Error(`Geocoding failed with status: ${response.status}`);
+  const fetchAddress = useCallback(
+    async (latlng, retries = 5, backoff = 2000) => {
+      setAddressLoading(true);
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&countrycodes=NP`,
+            {
+              headers: { "User-Agent": "VetApp/1.0 (your.email@example.com)" },
+            }
+          );
+          if (!response.ok)
+            throw new Error(`Nominatim status: ${response.status}`);
+          const data = await response.json();
+          console.log("Nominatim success:", data);
+          setAddressLoading(false);
+          return data.display_name || "Address not found";
+        } catch (error) {
+          console.warn(`Nominatim attempt ${attempt} failed: ${error.message}`);
+          if (attempt === retries) {
+            setAddressLoading(false);
+            return null;
+          }
+          await delay(backoff * attempt);
+        }
       }
-      const data = await response.json();
-      setAddress(data.display_name || "Address not found");
-    } catch (error) {
-      console.error("Geocoding error:", error.message);
-      setAddress(
-        `Lat: ${latlng.lat}, Lon: ${latlng.lng} (Address unavailable)`
-      );
-      setError("Could not fetch address. Using coordinates instead.");
-    }
-  };
+    },
+    []
+  );
+
+  const handleMapClick = useCallback(
+    async (latlng) => {
+      setPosition(latlng);
+      setError("");
+      console.log("Map clicked:", latlng);
+      const fetchedAddress = await fetchAddress(latlng);
+      if (fetchedAddress) {
+        setAddress(fetchedAddress);
+        setManualAddress("");
+      } else {
+        const fallbackAddress = `Lat: ${latlng.lat}, Lon: ${latlng.lng}`;
+        setAddress(fallbackAddress);
+        setError(
+          "Could not fetch address. Please enter manually or use coordinates."
+        );
+      }
+    },
+    [fetchAddress]
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,11 +99,17 @@ const HomeVisitRequestForm = () => {
       return;
     }
 
+    const finalAddress = manualAddress.trim() || address;
+    if (!finalAddress) {
+      setError("Please provide an address or select a location.");
+      return;
+    }
+
     const payload = {
       petType,
       description,
       coordinates: [position.lng, position.lat],
-      address: address || `Lat: ${position.lat}, Lon: ${position.lng}`,
+      address: finalAddress,
       priority,
     };
 
@@ -84,9 +127,11 @@ const HomeVisitRequestForm = () => {
           },
         }
       );
+      console.log("Submit success:", response.data);
       alert(response.data.message);
       setPosition(null);
       setAddress("");
+      setManualAddress("");
       setPetType("Cow");
       setDescription("");
       setPriority("medium");
@@ -153,12 +198,27 @@ const HomeVisitRequestForm = () => {
             <MapClickHandler onLocationSelect={handleMapClick} />
             {position && <Marker position={position} />}
           </MapContainer>
-          <p>Selected Address: {address || "No location selected"}</p>
+          <p>
+            Selected Address:{" "}
+            {addressLoading
+              ? "Fetching address..."
+              : address || "No location selected"}
+          </p>
+          <div className="form-group">
+            <label>Manual Address (if needed):</label>
+            <input
+              type="text"
+              value={manualAddress}
+              onChange={(e) => setManualAddress(e.target.value)}
+              placeholder="Enter address manually"
+              style={{ width: "100%" }}
+            />
+          </div>
         </div>
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || addressLoading}
           style={{ padding: "10px 20px" }}
         >
           {loading ? "Submitting..." : "Submit Request"}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
@@ -8,12 +8,16 @@ import "./../../Views/VetHomeVisitDashboard.css";
 
 const VetHomeVisitDashboard = () => {
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const mapRef = useRef(null);
   const wsRef = useRef(null);
   const retryCountRef = useRef(0);
   const navigate = useNavigate();
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
@@ -42,15 +46,17 @@ const VetHomeVisitDashboard = () => {
       if (error.response?.status === 401) {
         navigate("/login");
       } else {
-        alert(
-          "Failed to load requests: " +
-            (error.response?.data?.message || "Server error")
+        setError(
+          error.response?.data?.message ||
+            "Failed to load requests. Please try again or check server status."
         );
       }
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const connectWebSocket = () => {
+  const connectWebSocket = useCallback(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       console.log("WebSocket already connected (Vet), skipping reconnect");
       return;
@@ -94,7 +100,7 @@ const VetHomeVisitDashboard = () => {
       );
       setTimeout(connectWebSocket, delay);
     };
-  };
+  }, [fetchRequests]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -130,6 +136,8 @@ const VetHomeVisitDashboard = () => {
       return;
     }
 
+    setLoading(true);
+    setError("");
     try {
       const token = localStorage.getItem("token");
       const response = await axios.patch(
@@ -149,12 +157,16 @@ const VetHomeVisitDashboard = () => {
         error.response?.data?.message ||
           "Failed to accept request. Please try again or check server status."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="vet-home-visit-dashboard">
       <h2>Emergency Home Visit Requests</h2>
+      {error && <p className="error-message">{error}</p>}
+      {loading && <p>Loading requests...</p>}
       <div className="dashboard-container">
         <div className="map-wrapper" style={{ height: "500px", width: "70%" }}>
           <MapContainer
@@ -193,7 +205,7 @@ const VetHomeVisitDashboard = () => {
                       Distance:{" "}
                       {typeof request.distance === "number"
                         ? request.distance.toFixed(2)
-                        : "N/A"}{" "}
+                        : "Calculating..."}{" "}
                       km
                     </p>
                     <p>
@@ -207,8 +219,9 @@ const VetHomeVisitDashboard = () => {
                     <button
                       onClick={() => handleAccept(request._id)}
                       style={{ padding: "5px 10px", marginTop: "10px" }}
+                      disabled={loading}
                     >
-                      Accept Request
+                      {loading ? "Processing..." : "Accept Request"}
                     </button>
                   </Popup>
                 </Marker>
@@ -219,7 +232,7 @@ const VetHomeVisitDashboard = () => {
           className="request-list"
           style={{ width: "30%", overflowY: "auto", height: "500px" }}
         >
-          {requests.length === 0 ? (
+          {requests.length === 0 && !loading ? (
             <p>No requests available within 100 km.</p>
           ) : (
             requests.map((request) => (
@@ -235,7 +248,7 @@ const VetHomeVisitDashboard = () => {
                   Distance:{" "}
                   {typeof request.distance === "number"
                     ? request.distance.toFixed(2)
-                    : "N/A"}{" "}
+                    : "Calculating..."}{" "}
                   km
                 </p>
                 <p>
@@ -250,6 +263,15 @@ const VetHomeVisitDashboard = () => {
                   <p>
                     Chat available on the <a href="/vet-chat">Vet Chat page</a>.
                   </p>
+                )}
+                {request.status === "pending" && (
+                  <button
+                    onClick={() => handleAccept(request._id)}
+                    style={{ padding: "5px 10px", marginTop: "10px" }}
+                    disabled={loading}
+                  >
+                    {loading ? "Processing..." : "Accept Request"}
+                  </button>
                 )}
               </div>
             ))

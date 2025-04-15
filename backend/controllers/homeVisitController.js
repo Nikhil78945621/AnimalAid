@@ -4,9 +4,15 @@ const moment = require("moment-timezone");
 const createError = require("../utils/appError");
 const axios = require("axios");
 const WebSocket = require("ws");
+const mongoose = require("mongoose");
 
-// In-memory cache for vet coordinates
-const vetCoordsCache = new Map();
+// Schema for caching coordinates
+const coordCacheSchema = new mongoose.Schema({
+  postalCode: { type: String, required: true, unique: true },
+  coordinates: { type: [Number], required: true }, // [lon, lat]
+  lastUpdated: { type: Date, default: Date.now },
+});
+const CoordCache = mongoose.model("CoordCache", coordCacheSchema);
 
 const broadcastUpdate = (data) => {
   if (global.wss) {
@@ -20,12 +26,13 @@ const broadcastUpdate = (data) => {
   }
 };
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms + Math.random() * 100));
 
 const calculateDistance = async (
   vetPostalCode,
   requestCoordinates,
-  retries = 3
+  retries = 5
 ) => {
   if (
     !vetPostalCode ||
@@ -46,61 +53,63 @@ const calculateDistance = async (
   }
 
   try {
-    let vetCoords = vetCoordsCache.get(vetPostalCode);
-    if (!vetCoords) {
-      for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-          const vetResponse = await axios.get(
-            `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
-              vetPostalCode
-            )}&format=json&limit=1`
+    // Check MongoDB cache
+    let vetCoords = await CoordCache.findOne({ postalCode: vetPostalCode });
+    if (vetCoords) {
+      console.log(`Cache hit for postal code ${vetPostalCode}`);
+      return calculateHaversineDistance(
+        vetCoords.coordinates,
+        requestCoordinates
+      );
+    }
+
+    // Fetch from Nominatim
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(
+            vetPostalCode
+          )}&format=json&limit=1&countrycodes=NP`, // Restrict to Nepal
+          { headers: { "User-Agent": "VetApp/1.0 (your.email@example.com)" } }
+        );
+        if (response.data.length === 0) {
+          throw new Error(
+            `No coordinates found for postal code: ${vetPostalCode}`
           );
-          if (vetResponse.data.length === 0) {
+        }
+        vetCoords = [
+          parseFloat(response.data[0].lon),
+          parseFloat(response.data[0].lat),
+        ];
+
+        // Cache in MongoDB
+        await CoordCache.findOneAndUpdate(
+          { postalCode: vetPostalCode },
+          { coordinates: vetCoords, lastUpdated: new Date() },
+          { upsert: true }
+        );
+        return calculateHaversineDistance(vetCoords, requestCoordinates);
+      } catch (error) {
+        if (error.response && error.response.status === 429) {
+          if (attempt === retries) {
             throw new Error(
-              `No coordinates found for postal code: ${vetPostalCode}`
+              "Max retries reached for geocoding due to rate limit"
             );
           }
-          vetCoords = [
-            parseFloat(vetResponse.data[0].lon),
-            parseFloat(vetResponse.data[0].lat),
-          ];
-          vetCoordsCache.set(vetPostalCode, vetCoords);
-          break;
-        } catch (error) {
-          if (error.response && error.response.status === 429) {
-            if (attempt === retries) {
-              throw new Error(
-                "Max retries reached for geocoding due to rate limit"
-              );
-            }
-            const backoff = Math.pow(2, attempt) * 1000;
-            console.warn(
-              `Rate limit hit for postal code "${vetPostalCode}". Retrying in ${backoff}ms...`
-            );
-            await delay(backoff);
-          } else {
-            throw error;
-          }
+          const backoff = Math.pow(2, attempt) * 2000;
+          console.warn(
+            `Rate limit hit for postal code "${vetPostalCode}". Retrying in ${backoff}ms...`
+          );
+          await delay(backoff);
+        } else {
+          console.error(
+            `Geocoding attempt ${attempt} for postal code ${vetPostalCode}: ${error.message}`
+          );
+          if (attempt === retries) throw error;
+          await delay(2000 * attempt);
         }
       }
     }
-
-    const requestCoords = requestCoordinates;
-
-    const toRad = (value) => (value * Math.PI) / 180;
-    const R = 6371; // Earth's radius in km
-    const dLat = toRad(requestCoords[1] - vetCoords[1]);
-    const dLon = toRad(requestCoords[0] - vetCoords[0]);
-    const lat1 = toRad(vetCoords[1]);
-    const lat2 = toRad(requestCoords[1]);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-
-    return distance;
   } catch (error) {
     console.error(
       `Distance calculation error for postal code "${vetPostalCode}":`,
@@ -108,6 +117,21 @@ const calculateDistance = async (
     );
     throw error;
   }
+};
+
+const calculateHaversineDistance = (vetCoords, requestCoords) => {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const R = 6371; // Earth's radius in km
+  const dLat = toRad(requestCoords[1] - vetCoords[1]);
+  const dLon = toRad(requestCoords[0] - vetCoords[0]);
+  const lat1 = toRad(vetCoords[1]);
+  const lat2 = toRad(requestCoords[1]);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 };
 
 exports.createRequest = async (req, res, next) => {
@@ -137,7 +161,59 @@ exports.createRequest = async (req, res, next) => {
       statusHistory: [{ status: "pending", timestamp: new Date() }],
     });
 
+    const petOwner = await User.findById(req.user._id).select("name");
+    const vets = await User.find({
+      role: "vet",
+      postalCode: { $exists: true },
+    });
+    const eligibleVets = await Promise.all(
+      vets.map(async (vet) => {
+        try {
+          const distance = await calculateDistance(
+            vet.postalCode,
+            request.location.coordinates
+          );
+          return distance <= 100 ? vet : null;
+        } catch (error) {
+          console.warn(
+            `Failed to calculate distance for vet ${vet._id}: ${error.message}`
+          );
+          return null;
+        }
+      })
+    );
+
+    const validVets = eligibleVets.filter((vet) => vet !== null);
+    for (const vet of validVets) {
+      const vetTimezone = vet.timezone || "UTC";
+      const formattedDate = moment()
+        .tz(vetTimezone)
+        .format("MMMM Do YYYY, h:mm a");
+
+      await User.findByIdAndUpdate(vet._id, {
+        $push: {
+          notifications: {
+            message: `New home visit request from ${petOwner.name} for a ${petType} at ${address} on ${formattedDate}.`,
+            type: "home-visit",
+            read: false,
+            createdAt: new Date(),
+          },
+        },
+      });
+
+      broadcastUpdate({
+        type: "NEW_NOTIFICATION",
+        data: {
+          vetId: vet._id,
+          message: `New home visit request from ${petOwner.name} for a ${petType} at ${address} on ${formattedDate}.`,
+          type: "home-visit",
+          createdAt: new Date(),
+        },
+      });
+    }
+
     broadcastUpdate({ type: "NEW_REQUEST", data: request });
+
     res.status(201).json({
       status: "success",
       data: request,
@@ -395,15 +471,6 @@ exports.sendChatMessage = async (req, res, next) => {
       return next(new createError("Request not found", 404));
     }
 
-    // Log for debugging
-    console.log("sendChatMessage:", {
-      senderId: senderId.toString(),
-      petOwner: request.petOwner?.toString(),
-      veterinarian: request.veterinarian?.toString(),
-      requestId,
-      message,
-    });
-
     if (
       request.petOwner.toString() !== senderId.toString() &&
       request.veterinarian?.toString() !== senderId.toString()
@@ -432,13 +499,10 @@ exports.sendChatMessage = async (req, res, next) => {
 
     const updatedRequest = await HomeVisitRequest.findByIdAndUpdate(
       requestId,
-      {
-        $push: { chatHistory: chatMessage },
-      },
+      { $push: { chatHistory: chatMessage } },
       { new: true }
     );
 
-    // Log the saved message for verification
     console.log("Saved chat message:", chatMessage);
 
     broadcastUpdate({
@@ -480,15 +544,12 @@ exports.cancelRequest = async (req, res, next) => {
     const updatedRequest = await HomeVisitRequest.findByIdAndUpdate(
       requestId,
       {
-        $set: { status: "canceled" }, // Use "canceled"
-        $push: {
-          statusHistory: { status: "canceled", timestamp: new Date() }, // Use "canceled"
-        },
+        $set: { status: "canceled" },
+        $push: { statusHistory: { status: "canceled", timestamp: new Date() } },
       },
       { new: true, runValidators: true }
     );
 
-    // Notify the vet if the request was accepted
     if (request.veterinarian) {
       const message = `The home visit request for ${request.petType} at ${
         request.address
@@ -519,4 +580,3 @@ exports.cancelRequest = async (req, res, next) => {
     next(error);
   }
 };
-// ... (rest of the controller code)

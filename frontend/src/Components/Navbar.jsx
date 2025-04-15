@@ -134,6 +134,11 @@ const Navbar = () => {
             <Link to="/admin-dashboard">Admin Dashboard</Link>
           </li>
         )}
+        {isLoggedIn && role === "admin" && (
+          <li>
+            <Link to="/service-approvals ">Approve Services</Link>
+          </li>
+        )}
         {isLoggedIn && role === "user" && (
           <li className="dropdown">
             <span className="dropdown-toggle">Appointments</span>

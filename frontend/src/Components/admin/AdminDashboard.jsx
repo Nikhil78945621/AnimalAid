@@ -145,9 +145,6 @@ const AdminDashboard = () => {
           </tbody>
         </table>
       </div>
-      <Link to="/service-approvals" className="admin-nav-link">
-        Service Approvals
-      </Link>
     </div>
   );
 };

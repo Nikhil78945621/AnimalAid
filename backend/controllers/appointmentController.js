@@ -98,7 +98,6 @@ exports.getAvailableSlots = async (req, res, next) => {
   }
 };
 
-// Create new appointment
 // controllers/appointmentController.js
 exports.createAppointment = async (req, res, next) => {
   try {
@@ -131,16 +130,40 @@ exports.createAppointment = async (req, res, next) => {
       return next(new createError("This time slot is already booked", 400));
     }
 
-    // Create appointment with proper owner reference
+    // Create appointment
     const appointment = await Appointment.create({
       ...req.body,
-      petOwner, // Add the pet owner from authenticated user
+      petOwner,
       dateTime: utcTime,
+    });
+
+    // Add notification to the veterinarian
+    const vet = await User.findById(veterinarian);
+    if (!vet) {
+      return next(new createError("Veterinarian not found", 404));
+    }
+
+    const formattedDate = moment(utcTime)
+      .tz(vet.timezone || "UTC")
+      .format("MMMM Do YYYY, h:mm a");
+
+    await User.findByIdAndUpdate(veterinarian, {
+      $push: {
+        notifications: {
+          message: `New appointment booked for ${formattedDate} with pet "${pet}".`,
+          type: "appointment",
+          read: false,
+          createdAt: new Date(),
+        },
+      },
     });
 
     res.status(201).json(appointment);
   } catch (error) {
-    next(new createError(error.message, 500));
+    console.error("Create appointment error:", error);
+    next(
+      new createError(`Failed to create appointment: ${error.message}`, 500)
+    );
   }
 };
 
