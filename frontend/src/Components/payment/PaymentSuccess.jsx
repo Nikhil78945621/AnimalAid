@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import "./../Views/PaymentResult.css";
+import "./../../Views/PaymentResult.css";
 
 function PaymentSuccess() {
   const location = useLocation();

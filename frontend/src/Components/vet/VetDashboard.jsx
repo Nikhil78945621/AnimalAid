@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 // import VetAppointments from "./VetAppointment"; // Commented out as unused
-import "./../Views/VetDashboard.css";
+import "./../../Views/VetDashboard.css";
 
 const VetDashboard = () => {
   const [vetData, setVetData] = useState({

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import "./../Views/VetChat.css";
+import "./../../Views/VetChat.css";
 
 const VetChat = () => {
   const [requests, setRequests] = useState([]);

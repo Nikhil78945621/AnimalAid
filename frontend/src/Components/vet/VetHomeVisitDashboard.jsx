@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import "./../Views/VetHomeVisitDashboard.css";
+import "./../../Views/VetHomeVisitDashboard.css";
 
 const VetHomeVisitDashboard = () => {
   const [requests, setRequests] = useState([]);

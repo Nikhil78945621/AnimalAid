@@ -15,42 +15,49 @@ const services = [
   {
     type: "Eye Care",
     icon: <FaEye />,
-    description: "Lorem spum lorem spum lorem spum",
+    description:
+      "Comprehensive eye exams, treatment for infections, and monitoring of vision issues in animals.",
   },
   {
     type: "Medical Checkup",
     icon: <FaStethoscope />,
-    description: "Lorem spum lorem spum lorem spum",
+    description:
+      "Routine health evaluations to detect illnesses early and ensure your animal stays healthy.",
   },
   {
     type: "Physiotherapy",
     icon: <FaPaw />,
-    description: "Lorem spum lorem spum lorem spum",
+    description:
+      "Physical therapy to aid recovery from injury, surgery, or chronic conditions affecting mobility.",
   },
   {
     type: "Cardiology",
     icon: <FaHeart />,
-    description: "Lorem spum lorem spum lorem spum",
+    description:
+      "Heart health assessment, diagnosis, and treatment for cardiovascular conditions in animals.",
   },
   {
     type: "Laboratory Services",
     icon: <FaVial />,
-    description: "Lorem spum lorem spum lorem spum",
+    description:
+      "Accurate diagnostic testing including blood work, urinalysis, and pathology reports.",
   },
   {
     type: "Vaccination",
     icon: <FaSyringe />,
-    description: "Lorem spum lorem spum lorem spum",
+    description:
+      "Preventive vaccinations to protect your animals from common infectious diseases.",
   },
 ];
 
 const Service = () => {
   return (
     <div className="service-container">
-      <h5 className="service-subtitle">Medical Services</h5>
       <h2 className="section-title">Our Healthcare Service</h2>
       <p className="section-description">
-        lorem spum lorem spum lorem spum lorem spum lorem spum lorem spum
+        We offer a wide range of medical services to ensure your animals receive
+        the best care possible. From routine checkups to specialized treatments,
+        our dedicated team is here to support their health and well-being.
       </p>
 
       <div className="services-grid">

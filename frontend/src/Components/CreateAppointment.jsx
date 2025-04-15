@@ -203,8 +203,12 @@ const CreateAppointment = () => {
             </div>
 
             {error && <p className="error-message">{error}</p>}
-            <button type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Appointment"}
+            <button
+              className="btnbookappointment"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : " Book Appointment"}
             </button>
           </form>
         </div>

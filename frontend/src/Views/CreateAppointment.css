@@ -69,7 +69,7 @@
 }
 
 /* Scoped Button Styling (Only for Create Appointment) */
-.create-appointment-btn {
+.btnbookappointment {
   width: 100%;
   background-color: #007bff;
   color: white;
@@ -82,7 +82,7 @@
   transition: background-color 0.3s ease;
 }
 
-.create-appointment-btn:hover {
+.btnbookappointment :hover {
   background-color: #0056b3;
 }
 
