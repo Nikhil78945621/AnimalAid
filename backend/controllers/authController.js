@@ -69,14 +69,25 @@ exports.getProfile = async (req, res, next) => {
       return next(new createError("User not found", 404));
     }
 
+    const userData = {
+      name: user.name,
+      email: user.email,
+      role: user.role, // Ensure this is always included
+      phone: user.phone,
+      address: user.address,
+    };
+
+    if (user.role === "vet") {
+      userData.speciality = user.speciality;
+      userData.fee = user.fee;
+      userData.clinic = user.clinic;
+      userData.postalCode = user.postalCode;
+    }
+
     res.status(200).json({
       status: "success",
-      deta: {
-        user: {
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+      data: {
+        user: userData,
       },
     });
   } catch (error) {

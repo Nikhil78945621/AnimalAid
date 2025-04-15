@@ -29,7 +29,9 @@ const ProfileModal = ({ show, onClose }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const userData = response.data.deta?.user || response.data.data;
+      console.log("API Response:", response.data); // Debug the full response
+      const userData = response.data.data.user;
+      console.log("User Data:", userData); // Debug the extracted user data
       setProfile(userData);
       setFormData({
         name: userData.name || "",
@@ -45,6 +47,7 @@ const ProfileModal = ({ show, onClose }) => {
       });
       setLoading(false);
     } catch (err) {
+      console.error("Fetch Profile Error:", err.response?.data || err.message); // Debug the error
       setError("Failed to load profile.");
       setLoading(false);
     }
