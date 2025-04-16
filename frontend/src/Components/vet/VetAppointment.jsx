@@ -48,7 +48,7 @@ const VetAppointments = ({ stats, setStats }) => {
     fetchAppointments();
   }, [navigate]);
 
-  const updateStatus = async (id, status) => {
+  const updateStatus = async (id, action) => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found. Redirecting to login.");
@@ -66,7 +66,7 @@ const VetAppointments = ({ stats, setStats }) => {
 
     try {
       await axios.patch(
-        `http://localhost:8084/api/appointments/${id}/${status}`,
+        `http://localhost:8084/api/appointments/${id}/${action}`,
         null,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -90,7 +90,7 @@ const VetAppointments = ({ stats, setStats }) => {
         });
       }
     } catch (error) {
-      console.error(`Error ${status} appointment:`, error);
+      console.error(`Error ${action} appointment:`, error);
       if (error.response?.status === 401) {
         console.error("Unauthorized. Redirecting to login.");
         navigate("/login");
@@ -121,6 +121,11 @@ const VetAppointments = ({ stats, setStats }) => {
               {appt.status === "confirmed" && (
                 <button onClick={() => updateStatus(appt._id, "complete")}>
                   Complete
+                </button>
+              )}
+              {(appt.status === "pending" || appt.status === "confirmed") && (
+                <button onClick={() => updateStatus(appt._id, "cancel-vet")}>
+                  Cancel
                 </button>
               )}
             </div>

@@ -548,3 +548,53 @@ exports.verifyPayment = async (req, res, next) => {
     next(new createError("Payment verification failed", 500));
   }
 };
+
+// Cancel appointment (vet)
+exports.cancelVetAppointment = async (req, res, next) => {
+  try {
+    const appointment = await Appointment.findOne({
+      _id: req.params.id,
+      veterinarian: req.user._id,
+      status: { $in: ["pending", "confirmed"] },
+    });
+
+    if (!appointment) {
+      return next(
+        new createError("Appointment not found or cannot be cancelled", 404)
+      );
+    }
+
+    // Get vet's timezone
+    const vet = await User.findById(req.user._id);
+    const vetTimezone = vet?.timezone || "UTC";
+
+    // Format appointment time in vet's timezone
+    const formattedDate = moment(appointment.dateTime)
+      .tz(vetTimezone)
+      .format("MMMM Do YYYY, h:mm a");
+
+    // Add notification to the user
+    await User.findByIdAndUpdate(appointment.petOwner, {
+      $push: {
+        notifications: {
+          message: `Your appointment on ${formattedDate} has been cancelled by  ${vet.name}.`,
+          type: "appointment",
+          read: false,
+          createdAt: new Date(),
+        },
+      },
+    });
+
+    // Update appointment status
+    appointment.status = "cancelled";
+    await appointment.save();
+
+    res.status(200).json({
+      status: "success",
+      data: appointment,
+    });
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    next(new createError("Failed to cancel appointment", 500));
+  }
+};

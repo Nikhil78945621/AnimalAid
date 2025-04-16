@@ -32,12 +32,11 @@ router.patch(
   appointmentController.rescheduleAppointment
 );
 
-// router.patch(
-//   "/:id/feedback",
-//   checkRole("user"),
-//   appointmentController.addFeedback
-// );
-
+router.patch(
+  "/:id/cancel-vet",
+  checkRole("vet"),
+  appointmentController.cancelVetAppointment
+);
 // Vet routes
 router.get(
   "/vet",

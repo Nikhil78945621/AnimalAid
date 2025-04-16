@@ -30,6 +30,7 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   width: 100%;
+  font-size: medium;
 }
 
 .login-container button[type="submit"] {
