@@ -90,7 +90,7 @@ exports.getServiceDetails = async (req, res, next) => {
     const details = await ServiceDetail.find({
       serviceType,
       status: "approved",
-    }).populate("vet", "name clinic");
+    }).populate("vet", "name clinic speciality fee");
 
     res.json(details);
   } catch (error) {

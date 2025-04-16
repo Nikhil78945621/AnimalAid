@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import ServiceForm from "./ServiceForm";
+import VetDetailsModal from "./../vet/VetDetailsModal";
 import "./../../Views/ServiceDetail.css";
 import { jwtDecode } from "jwt-decode";
 
@@ -13,6 +14,7 @@ const ServiceDetail = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userRole, setUserRole] = useState("");
   const [showPendingMessage, setShowPendingMessage] = useState(false);
+  const [selectedVet, setSelectedVet] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -48,6 +50,14 @@ const ServiceDetail = () => {
     } catch (err) {
       console.error("Error deleting service detail:", err);
     }
+  };
+
+  const handleVetBadgeClick = (vet) => {
+    setSelectedVet(vet);
+  };
+
+  const closeModal = () => {
+    setSelectedVet(null);
   };
 
   return (
@@ -91,7 +101,19 @@ const ServiceDetail = () => {
             )}
 
             {detail.vet && (
-              <div className="vet-badge">
+              <div
+                className="vet-badge"
+                onClick={
+                  userRole === "user"
+                    ? () => handleVetBadgeClick(detail.vet)
+                    : undefined
+                }
+                style={
+                  userRole === "user"
+                    ? { cursor: "pointer" }
+                    : { cursor: "default" }
+                }
+              >
                 <span>Dr. {detail.vet.name}</span>
               </div>
             )}
@@ -146,6 +168,10 @@ const ServiceDetail = () => {
           </div>
         ))}
       </div>
+
+      {selectedVet && (
+        <VetDetailsModal vet={selectedVet} onClose={closeModal} />
+      )}
     </div>
   );
 };

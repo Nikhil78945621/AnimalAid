@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import moment from "moment-timezone";
 import "./../Views/CreateAppointment.css";
 
@@ -9,7 +9,7 @@ const CreateAppointment = () => {
   const [selectedVet, setSelectedVet] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [pet, setPet] = useState(""); // Renamed to hold pet type
+  const [pet, setPet] = useState("");
   const [notes, setNotes] = useState("");
   const [address, setAddress] = useState("");
   const [vetFee, setVetFee] = useState(0);
@@ -18,8 +18,8 @@ const CreateAppointment = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [vetTimezone, setVetTimezone] = useState("UTC");
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // List of pet types
   const petTypes = [
     "Dog",
     "Cat",
@@ -33,7 +33,6 @@ const CreateAppointment = () => {
     "Fish",
   ];
 
-  // Fetch all vets
   useEffect(() => {
     const fetchVets = async () => {
       try {
@@ -47,14 +46,25 @@ const CreateAppointment = () => {
           }
         );
         setVets(response.data.data);
+
+        // Check if a vet is pre-selected from navigation state
+        const preSelectedVetId = location.state?.selectedVetId;
+        if (preSelectedVetId) {
+          const selectedVet = response.data.data.find(
+            (vet) => vet._id === preSelectedVetId
+          );
+          if (selectedVet) {
+            setSelectedVet(preSelectedVetId);
+            setVetFee(selectedVet.fee);
+          }
+        }
       } catch (err) {
         setError("Failed to fetch vets");
       }
     };
     fetchVets();
-  }, []);
+  }, [location.state]);
 
-  // Handle vet selection
   const handleVetChange = (e) => {
     const selectedVetId = e.target.value;
     const selectedVet = vets.find((vet) => vet._id === selectedVetId);
@@ -65,7 +75,6 @@ const CreateAppointment = () => {
     setAvailableSlots([]);
   };
 
-  // Fetch available slots for the selected vet and date
   const handleDateChange = async (e) => {
     const selectedDate = e.target.value;
     setDate(selectedDate);
@@ -88,7 +97,6 @@ const CreateAppointment = () => {
     }
   };
 
-  // Handle appointment submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -102,7 +110,7 @@ const CreateAppointment = () => {
         "http://localhost:8084/api/appointments",
         {
           veterinarian: selectedVet,
-          pet, // Holds selected pet type
+          pet,
           dateTime,
           notes,
           address,
@@ -134,7 +142,6 @@ const CreateAppointment = () => {
       <h2>Book your appointment now</h2>
 
       <div className="appointment-content">
-        {/* Form Section */}
         <div className="appointment-form">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -213,7 +220,6 @@ const CreateAppointment = () => {
           </form>
         </div>
 
-        {/* Image Section */}
         <div className="appointment-image">
           <img
             src="https://img.freepik.com/free-vector/pet-hospital-concept-illustration_114360-25803.jpg?semt=ais_hybrid"
