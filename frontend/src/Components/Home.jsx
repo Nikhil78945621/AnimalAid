@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./../Views/Home.css";
+import { jwtDecode } from "jwt-decode";
 
 const Home = () => {
   const [news, setNews] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0); // Track visible news index
-  const itemsPerPage = 3; // Show 3 news articles per slide
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const itemsPerPage = 3;
+  const [userRole, setUserRole] = useState("");
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [applicationData, setApplicationData] = useState({
+    qualifications: "",
+    experience: "",
+    specialty: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
+    // Check user role
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserRole(decoded.role);
+      } catch (err) {
+        console.error("Token decoding failed:", err);
+      }
+    }
+
+    // Fetch news
     const fetchNews = async () => {
       try {
         const response = await axios.get(
@@ -22,20 +44,62 @@ const Home = () => {
     fetchNews();
   }, []);
 
-  // Move to the next set of articles
   const nextSlide = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex + itemsPerPage < news.length ? prevIndex + itemsPerPage : 0
     );
   };
 
-  // Move to the previous set of articles
   const prevSlide = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex - itemsPerPage >= 0
         ? prevIndex - itemsPerPage
         : Math.max(0, news.length - itemsPerPage)
     );
+  };
+
+  const handleApplicationChange = (e) => {
+    const { name, value } = e.target;
+    setApplicationData({ ...applicationData, [name]: value });
+  };
+
+  const handleApplicationSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Disable the submit button
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:8084/api/vet-applications/submit",
+        applicationData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          // Disable retries
+          "axios-retry": { retries: 0 },
+        }
+      );
+      setSuccess(
+        "Application submitted successfully! Awaiting admin approval."
+      );
+      setApplicationData({
+        qualifications: "",
+        experience: "",
+        specialty: "",
+      });
+      setShowApplicationForm(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to submit application.");
+    } finally {
+      // Re-enable the submit button
+      submitButton.disabled = false;
+    }
   };
 
   return (
@@ -50,11 +114,81 @@ const Home = () => {
           <a href="#services" className="btn-primary">
             Learn More
           </a>
+          {userRole === "user" && (
+            <button
+              className="btn-secondary"
+              onClick={() => setShowApplicationForm(true)}
+            >
+              Eligible Veterinarian ?
+            </button>
+          )}
         </div>
         <div className="hero-image">
           <img src="a.jpg" alt="Veterinarian with cow" />
         </div>
       </section>
+
+      {showApplicationForm && (
+        <>
+          <div
+            className="overlay"
+            onClick={() => setShowApplicationForm(false)}
+          ></div>
+          <section className="application-form-section">
+            <h2>Apply to Become a Veterinarian</h2>
+            {error && <p className="error">{error}</p>}
+            {success && <p className="success">{success}</p>}
+            <form
+              onSubmit={handleApplicationSubmit}
+              className="application-form"
+            >
+              <div>
+                <label>Qualifications</label>
+                <input
+                  name="qualifications"
+                  value={applicationData.qualifications}
+                  onChange={handleApplicationChange}
+                  required
+                  placeholder="e.g., DVM, BVSc, etc."
+                />
+              </div>
+              <div>
+                <label>Experience</label>
+                <input
+                  name="experience"
+                  value={applicationData.experience}
+                  onChange={handleApplicationChange}
+                  required
+                  placeholder="e.g., 5 years in small animal practice"
+                />
+              </div>
+              <div>
+                <label>Specialty</label>
+                <input
+                  type="text"
+                  name="specialty"
+                  value={applicationData.specialty}
+                  onChange={handleApplicationChange}
+                  required
+                  placeholder="e.g., Small Animals, Livestock, Exotic Pets"
+                />
+              </div>
+              <div className="form-buttons">
+                <button type="submit" className="btn-primary">
+                  Submit Application
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowApplicationForm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        </>
+      )}
 
       {/* News Section */}
       <section className="news-section">
@@ -66,7 +200,6 @@ const Home = () => {
             <button className="btn-prev" onClick={prevSlide}>
               ◀ Prev
             </button>
-
             <div className="news-cards">
               {news
                 .slice(currentIndex, currentIndex + itemsPerPage)
@@ -89,7 +222,6 @@ const Home = () => {
                   </div>
                 ))}
             </div>
-
             <button className="btn-next" onClick={nextSlide}>
               Next ▶
             </button>

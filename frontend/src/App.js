@@ -5,7 +5,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-
 import Home from "./Components/Home";
 import Login from "./Components/Login";
 import Signup from "./Components/Signup";
@@ -27,9 +26,13 @@ import AdminDashboard from "./Components/admin/AdminDashboard";
 import ServiceApproval from "./Components/admin/ServiceApproval";
 import UserHomeVisitRequests from "./Components/UserHomeVisitRequests";
 import VetChat from "./Components/vet/VetChat";
+import "./Views/Theme.css";
+import Footer from "./Components/Footer";
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState("");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -46,10 +49,24 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
   return (
     <div>
       <Router>
-        <Navbar isAuthenticated={isAuthenticated} userRole={userRole} />
+        <Navbar
+          isAuthenticated={isAuthenticated}
+          userRole={userRole}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/About" element={<About />} />
@@ -73,8 +90,6 @@ const App = () => {
             }
           />
           <Route path="/vet-chat" element={<VetChat />} />
-
-          {/* Admin Dashboard Route */}
           <Route
             path="/admin-dashboard"
             element={
@@ -89,9 +104,7 @@ const App = () => {
               )
             }
           />
-
           <Route path="/service-approvals" element={<ServiceApproval />} />
-          {/* Protected Routes */}
           <Route
             path="/appointments"
             element={
@@ -135,6 +148,7 @@ const App = () => {
             }
           />
         </Routes>
+        <Footer />
       </Router>
     </div>
   );

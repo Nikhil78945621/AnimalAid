@@ -577,7 +577,7 @@ exports.cancelVetAppointment = async (req, res, next) => {
     await User.findByIdAndUpdate(appointment.petOwner, {
       $push: {
         notifications: {
-          message: `Your appointment on ${formattedDate} has been cancelled by  ${vet.name}.`,
+          message: `Your appointment on ${formattedDate} has been cancelled by Veterinarian ${vet.name}.`,
           type: "appointment",
           read: false,
           createdAt: new Date(),

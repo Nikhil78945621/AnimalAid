@@ -8,6 +8,7 @@ const vetRoutes = require("./routes/VetRoutes");
 const homeVisitRoutes = require("./routes/homeVisitRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const vetApplicationRoutes = require("./routes/vetApplicationRoutes");
 const WebSocket = require("ws");
 
 const app = express();
@@ -29,7 +30,7 @@ app.use("/api/vet", vetRoutes);
 app.use("/api/home-visits", homeVisitRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/admin", adminRoutes);
-
+app.use("/api/vet-applications", vetApplicationRoutes);
 // MongoDB connection
 mongoose
   .connect("mongodb://localhost:27017/authentication", {

@@ -1,33 +1,30 @@
-// src/Components/Navbar.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ProfileModal from "./ProfileModal";
 import axios from "axios";
 import "./../Views/Navbar.css";
 
-const Navbar = () => {
+const Navbar = ({ isAuthenticated, userRole, theme, toggleTheme }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const isLoggedIn = !!localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const isLoggedIn = isAuthenticated || !!localStorage.getItem("token");
+  const role = userRole || localStorage.getItem("role");
   const navigate = useNavigate();
   const notificationRef = useRef(null);
   const searchRef = useRef(null);
 
-  // Fetch notifications periodically when logged in
   useEffect(() => {
     if (isLoggedIn) {
       fetchNotifications();
-      const interval = setInterval(fetchNotifications, 300000); // Every 5 minutes
+      const interval = setInterval(fetchNotifications, 300000);
       return () => clearInterval(interval);
     }
   }, [isLoggedIn]);
 
-  // Debounced search for vets
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
       if (searchQuery.trim()) {
@@ -57,7 +54,6 @@ const Navbar = () => {
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -74,7 +70,6 @@ const Navbar = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Fetch notifications
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -90,7 +85,6 @@ const Navbar = () => {
     }
   };
 
-  // Mark all notifications as read
   const markNotificationsAsRead = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -107,7 +101,6 @@ const Navbar = () => {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -117,14 +110,12 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      {/* Logo Section */}
       <div className="navbar-logo">
         <Link to="/">
           <img src="logo.png" alt="Logo" className="logo" />
         </Link>
       </div>
 
-      {/* Navigation Links */}
       <ul className="navbar-links">
         <li>
           <Link to="/">Home</Link>
@@ -136,7 +127,7 @@ const Navbar = () => {
         )}
         {isLoggedIn && role === "admin" && (
           <li>
-            <Link to="/service-approvals ">Approve Services</Link>
+            <Link to="/service-approvals">Approve Services</Link>
           </li>
         )}
         {isLoggedIn && role === "user" && (
@@ -153,17 +144,16 @@ const Navbar = () => {
             <span className="dropdown-toggle">Vet Appointment</span>
             <div className="dropdown-content">
               <Link to="/vet-dashboard">Vet Dashboard</Link>
-              <Link to="/vet-appointments ">Vet Appointments</Link>
+              <Link to="/vet-appointments">Vet Appointments</Link>
             </div>
           </li>
         )}
-
         {isLoggedIn && role === "user" && (
           <li className="dropdown">
-            <span className="dropdown-toggle"> Home Visit</span>
+            <span className="dropdown-toggle">Home Visit</span>
             <div className="dropdown-content">
-              <Link to="/home-visit"> Home Visit</Link>
-              <Link to="/my-requests"> Chat</Link>
+              <Link to="/home-visit">Home Visit</Link>
+              <Link to="/my-requests">Chat</Link>
             </div>
           </li>
         )}
@@ -184,9 +174,7 @@ const Navbar = () => {
         </li>
       </ul>
 
-      {/* Right Section: Search, Notifications, Profile, Auth */}
       <div className="navbar-right">
-        {/* Search Bar */}
         <div className="search-container" ref={searchRef}>
           <div className="search-bar">
             <input
@@ -216,10 +204,8 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Authenticated User Actions */}
         {isLoggedIn ? (
           <div className="profile-section">
-            {/* Notifications */}
             <div className="notification-container" ref={notificationRef}>
               <button
                 className="notification-btn"
@@ -266,7 +252,16 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Profile Button */}
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${
+                theme === "light" ? "dark" : "light"
+              } mode`}
+            >
+              <i className={`fas fa-${theme === "light" ? "moon" : "sun"}`}></i>
+            </button>
+
             <button
               className="profile-btn"
               onClick={() => setShowProfileModal(true)}
@@ -275,7 +270,6 @@ const Navbar = () => {
               <i className="fa-solid fa-user"></i>
             </button>
 
-            {/* Logout Button */}
             <button
               className="logout-btn"
               onClick={handleLogout}
@@ -286,6 +280,15 @@ const Navbar = () => {
           </div>
         ) : (
           <div className="auth-buttons">
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${
+                theme === "light" ? "dark" : "light"
+              } mode`}
+            >
+              <i className={`fas fa-${theme === "light" ? "moon" : "sun"}`}></i>
+            </button>
             <button className="signup-btn">
               <Link to="/signup" className="signup-link">
                 Sign Up
@@ -295,7 +298,6 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Profile Modal */}
       <ProfileModal
         show={showProfileModal}
         onClose={() => setShowProfileModal(false)}
