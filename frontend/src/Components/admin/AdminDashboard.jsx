@@ -109,9 +109,6 @@ const AdminDashboard = () => {
     <div className="admin-container">
       <header className="admin-header">
         <h1>Admin Dashboard</h1>
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
-        </button>
       </header>
 
       {error && <p className="error">{error}</p>}

@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+// Components/payment/PaymentSuccess.js
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
 import "./../../Views/PaymentResult.css";
 
 function PaymentSuccess() {
@@ -9,24 +9,12 @@ function PaymentSuccess() {
   const searchParams = new URLSearchParams(location.search);
   const appointmentId = searchParams.get("appointmentId");
 
-  useEffect(() => {
-    if (!appointmentId) {
-      navigate("/appointments");
-      return;
-    }
+  // No need for useEffect or verifyPayment, as backend handles verification
 
-    const verifyPayment = async () => {
-      try {
-        await axios.get(
-          `http://localhost:8084/api/appointments/payment/verify/${appointmentId}`
-        );
-      } catch (error) {
-        console.error("Payment verification failed:", error);
-      }
-    };
-
-    verifyPayment();
-  }, [appointmentId, navigate]);
+  if (!appointmentId) {
+    navigate("/appointments");
+    return null;
+  }
 
   return (
     <div className="payment-result success">
@@ -36,7 +24,6 @@ function PaymentSuccess() {
         <button onClick={() => navigate(`/appointments`)}>
           View Appointments
         </button>
-
         <button onClick={() => navigate("/")}>Back to Home</button>
       </div>
     </div>

@@ -19,7 +19,7 @@ import Service from "./Components/Service/Service";
 import ServiceDetail from "./Components/Service/ServiceDetail";
 import HomeVisitRequestForm from "./Components/HomeVisitRequestForm";
 import VetHomeVisitDashboard from "./Components/vet/VetHomeVisitDashboard";
-import ESEWAPayment from "./Components/payment/ESEWAPayment";
+import KhaltiPayment from "./Components/payment/KhaltiPayment";
 import PaymentFailure from "./Components/payment/PaymentFailed";
 import PaymentSuccess from "./Components/payment/PaymentSuccess";
 import AdminDashboard from "./Components/admin/AdminDashboard";
@@ -28,6 +28,7 @@ import UserHomeVisitRequests from "./Components/UserHomeVisitRequests";
 import VetChat from "./Components/vet/VetChat";
 import "./Views/Theme.css";
 import Footer from "./Components/Footer";
+import Payment from "./Components/Payment";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -83,13 +84,15 @@ const App = () => {
           <Route path="/vet-appointments" element={<VetAppointments />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
+
           <Route
             path="/payment/:appointmentId"
             element={
-              isAuthenticated ? <ESEWAPayment /> : <Navigate to="/login" />
+              isAuthenticated ? <KhaltiPayment /> : <Navigate to="/login" />
             }
           />
           <Route path="/vet-chat" element={<VetChat />} />
+          <Route path="/Payment" element={<Payment />} />
           <Route
             path="/admin-dashboard"
             element={

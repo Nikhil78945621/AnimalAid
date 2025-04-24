@@ -1,3 +1,4 @@
+// src/Components/UserAppointments.js
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -14,6 +15,7 @@ const UserAppointments = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
+
   // Fetch appointments for the logged-in user
   const fetchAppointments = async () => {
     try {
@@ -24,12 +26,13 @@ const UserAppointments = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      console.log("Fetched appointments:", response.data.data); // Debug log
       setAppointments(response.data.data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
       if (error.response?.status === 403) {
         alert("You are not authorized to access this page.");
-        window.location.href = "/login";
+        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -131,29 +134,30 @@ const UserAppointments = () => {
                 <p>Reason: {appt.notes || "No additional notes"}</p>
                 <p>Status: {appt.status}</p>
                 <p>Vet: {appt.veterinarian?.name}</p>
-                <p>Fee: Rs{appt.veterinarian?.fee}</p>
+                <p>Fee: Rs {appt.veterinarian?.fee}</p>
                 <p>Payment Status: {payment.status}</p>
               </div>
               <div className="appointment-actions">
-                {["pending", "confirmed"].includes(appt.status) && (
-                  <>
-                    <button onClick={() => handleCancel(appt._id)}>
-                      Cancel
-                    </button>
-                    <button onClick={() => handleReschedule(appt._id)}>
-                      Reschedule
-                    </button>
-                    <button
-                      onClick={() =>
-                        navigate(`/payment/${appt._id}`, {
-                          state: { appointment: appt },
-                        })
-                      }
-                    >
-                      Pay Now
-                    </button>
-                  </>
-                )}
+                {["pending", "confirmed"].includes(appt.status) &&
+                  payment.status !== "paid" && (
+                    <>
+                      <button onClick={() => handleCancel(appt._id)}>
+                        Cancel
+                      </button>
+                      <button onClick={() => handleReschedule(appt._id)}>
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(`/payment/${appt._id}`, {
+                            state: { appointment: appt },
+                          })
+                        }
+                      >
+                        Pay Now
+                      </button>
+                    </>
+                  )}
                 {rescheduleData.appointmentId === appt._id && (
                   <div className="reschedule-form">
                     <select

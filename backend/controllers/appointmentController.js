@@ -1,11 +1,11 @@
+// controllers/appointmentController.js
 const Appointment = require("../models/Appointment");
 const VetAvailability = require("../models/VetAvailability");
 const createError = require("../utils/appError");
 const User = require("../models/userModel");
 const moment = require("moment-timezone");
-const CryptoJS = require("crypto-js");
+const axios = require("axios");
 
-// Helper function to generate time slots
 const generateTimeSlots = (start, end, duration) => {
   const slots = [];
   let current = new Date(start);
@@ -18,12 +18,9 @@ const generateTimeSlots = (start, end, duration) => {
   return slots;
 };
 
-// Get available slots for a vet
 exports.getAvailableSlots = async (req, res, next) => {
   try {
     const { vetId, date } = req.query;
-
-    // Fetch vet availability
     const vetAvailability = await VetAvailability.findOne({ vet: vetId });
     if (!vetAvailability) {
       return next(new createError("Vet availability not found", 404));
@@ -33,7 +30,6 @@ exports.getAvailableSlots = async (req, res, next) => {
     const inputDate = moment.tz(date, "YYYY-MM-DD", vetTimezone);
     const day = inputDate.format("ddd");
 
-    // Find working hours for the selected day
     const workingDay = vetAvailability.workingHours.find(
       (wh) => wh.day === day
     );
@@ -41,7 +37,6 @@ exports.getAvailableSlots = async (req, res, next) => {
       return res.json({ timezone: vetTimezone, slots: [] });
     }
 
-    // Generate time slots based on working hours and appointment duration
     const start = inputDate.clone().set({
       hour: workingDay.start.split(":")[0],
       minute: workingDay.start.split(":")[1],
@@ -58,16 +53,12 @@ exports.getAvailableSlots = async (req, res, next) => {
       current.add(vetAvailability.appointmentDuration, "minutes");
     }
 
-    // Convert slots to UTC for comparison
     const utcSlots = slots.map((slot) => slot.utc().toDate());
-
-    // Check existing appointments
     const bookedAppointments = await Appointment.find({
       veterinarian: vetId,
       dateTime: { $in: utcSlots },
     });
 
-    // Check blocked slots
     const blockedSlots = vetAvailability.blockedSlots.filter((blocked) => {
       const blockedStart = moment(blocked.start).tz(vetTimezone);
       const blockedEnd = moment(blocked.end).tz(vetTimezone);
@@ -76,8 +67,7 @@ exports.getAvailableSlots = async (req, res, next) => {
       );
     });
 
-    // Filter available slots
-    const availableSlots = slots.filter((slot, index) => {
+    const availableSlots = slots.filter((slot) => {
       const slotTime = slot.utc().toDate();
       return (
         !bookedAppointments.some(
@@ -98,7 +88,6 @@ exports.getAvailableSlots = async (req, res, next) => {
   }
 };
 
-// controllers/appointmentController.js
 exports.createAppointment = async (req, res, next) => {
   try {
     const { veterinarian, pet, dateTime: clientDateTime } = req.body;
@@ -106,9 +95,7 @@ exports.createAppointment = async (req, res, next) => {
       return next(new createError("Missing required fields", 400));
     }
 
-    // Get logged-in user (pet owner)
     const petOwner = req.user._id;
-
     const vetAvailability = await VetAvailability.findOne({
       vet: veterinarian,
     });
@@ -116,11 +103,9 @@ exports.createAppointment = async (req, res, next) => {
       return next(new createError("Vet availability not found", 404));
     }
 
-    // Convert client time to vet's timezone
     const slotTime = moment.tz(clientDateTime, vetAvailability.timezone);
     const utcTime = slotTime.utc().toDate();
 
-    // Check if the slot is already booked
     const existingAppointment = await Appointment.findOne({
       veterinarian,
       dateTime: utcTime,
@@ -130,14 +115,13 @@ exports.createAppointment = async (req, res, next) => {
       return next(new createError("This time slot is already booked", 400));
     }
 
-    // Create appointment
     const appointment = await Appointment.create({
       ...req.body,
       petOwner,
       dateTime: utcTime,
+      payment: { amount: 0, status: "pending" }, // Initialize payment field
     });
 
-    // Add notification to the veterinarian
     const vet = await User.findById(veterinarian);
     if (!vet) {
       return next(new createError("Veterinarian not found", 404));
@@ -174,7 +158,7 @@ exports.getUserAppointments = async (req, res, next) => {
     }
 
     const appointments = await Appointment.find({ petOwner: req.user._id })
-      .populate("veterinarian", "name fee") // Include fee in the response
+      .populate("veterinarian", "name fee")
       .sort({ dateTime: 1 });
 
     res.status(200).json({
@@ -189,13 +173,10 @@ exports.getUserAppointments = async (req, res, next) => {
 exports.getVetStats = async (req, res, next) => {
   try {
     const vetId = req.user._id;
-
-    // Count all appointments regardless of status
     const totalAppointments = await Appointment.countDocuments({
       veterinarian: vetId,
     });
 
-    // Calculate total income from completed appointments only
     const totalIncomeResult = await Appointment.aggregate([
       {
         $match: {
@@ -225,7 +206,6 @@ exports.getVetStats = async (req, res, next) => {
   }
 };
 
-// Get vet appointments
 exports.getVetAppointments = async (req, res, next) => {
   try {
     const appointments = await Appointment.find({ veterinarian: req.user._id })
@@ -237,21 +217,20 @@ exports.getVetAppointments = async (req, res, next) => {
   }
 };
 
-// Get all vets
 exports.getAllVets = async (req, res, next) => {
   try {
     const vets = await User.find({ role: "vet" }).select("name speciality fee");
-    if (!vets.length)
+    if (!vets.length) {
       return res
         .status(404)
         .json({ status: "fail", message: "No veterinarians found" });
+    }
     res.status(200).json({ status: "success", data: vets });
   } catch (error) {
     next(error);
   }
 };
 
-// Confirm appointment
 exports.confirmAppointment = async (req, res, next) => {
   try {
     const appointment = await Appointment.findOne({
@@ -266,16 +245,13 @@ exports.confirmAppointment = async (req, res, next) => {
       );
     }
 
-    // Get vet's timezone
     const vet = await User.findById(req.user._id);
     const vetTimezone = vet?.timezone || "UTC";
 
-    // Format appointment time in vet's timezone
     const formattedDate = moment(appointment.dateTime)
       .tz(vetTimezone)
       .format("MMMM Do YYYY, h:mm a");
 
-    // Add notification to the user
     await User.findByIdAndUpdate(appointment.petOwner, {
       $push: {
         notifications: {
@@ -286,7 +262,6 @@ exports.confirmAppointment = async (req, res, next) => {
       },
     });
 
-    // Update appointment status
     appointment.status = "confirmed";
     await appointment.save();
 
@@ -297,14 +272,13 @@ exports.confirmAppointment = async (req, res, next) => {
   }
 };
 
-// Complete appointment (vet)
 exports.completeAppointment = async (req, res, next) => {
   try {
     const appointment = await Appointment.findOneAndUpdate(
       {
         _id: req.params.id,
-        veterinarian: req.user._id, // Ensure the vet can only complete their own appointments
-        status: "confirmed", // Only confirmed appointments can be completed
+        veterinarian: req.user._id,
+        status: "confirmed",
       },
       { status: "completed" },
       { new: true }
@@ -325,14 +299,13 @@ exports.completeAppointment = async (req, res, next) => {
   }
 };
 
-// Cancel appointment (user)
 exports.cancelAppointment = async (req, res, next) => {
   try {
     const appointment = await Appointment.findOneAndUpdate(
       {
         _id: req.params.id,
-        petOwner: req.user._id, // Ensure the user can only cancel their own appointments
-        status: { $in: ["pending", "confirmed"] }, // Only pending or confirmed appointments can be cancelled
+        petOwner: req.user._id,
+        status: { $in: ["pending", "confirmed"] },
       },
       { status: "cancelled" },
       { new: true }
@@ -353,22 +326,19 @@ exports.cancelAppointment = async (req, res, next) => {
   }
 };
 
-/// Reschedule appointment (integrated with Create Appointment logic)
 exports.rescheduleAppointment = async (req, res, next) => {
   try {
     const { newDateTime } = req.body;
     const appointmentId = req.params.id;
 
-    // Validate newDateTime
     if (!newDateTime) {
       return next(new createError("New date and time are required", 400));
     }
 
-    // Find the appointment
     const appointment = await Appointment.findOne({
       _id: appointmentId,
-      petOwner: req.user._id, // Ensure the user owns the appointment
-      status: { $in: ["pending", "confirmed"] }, // Only allow rescheduling for pending/confirmed appointments
+      petOwner: req.user._id,
+      status: { $in: ["pending", "confirmed"] },
     });
 
     if (!appointment) {
@@ -377,7 +347,6 @@ exports.rescheduleAppointment = async (req, res, next) => {
       );
     }
 
-    // Check if the new slot is available
     const vetAvailability = await VetAvailability.findOne({
       vet: appointment.veterinarian,
     });
@@ -386,20 +355,18 @@ exports.rescheduleAppointment = async (req, res, next) => {
       .utc()
       .toDate();
 
-    // Check if the new slot is already booked or blocked
     const isSlotAvailable = await Appointment.findOne({
       veterinarian: appointment.veterinarian,
       dateTime: newSlotTime,
-      _id: { $ne: appointmentId }, // Exclude the current appointment
+      _id: { $ne: appointmentId },
     });
 
     if (isSlotAvailable) {
       return next(new createError("The selected slot is not available", 400));
     }
 
-    // Update the appointment
     appointment.dateTime = newSlotTime;
-    appointment.status = "pending"; // Reset status to pending for vet confirmation
+    appointment.status = "pending";
     await appointment.save();
 
     res.status(200).json({
@@ -411,20 +378,15 @@ exports.rescheduleAppointment = async (req, res, next) => {
   }
 };
 
-// In your backend (appointmentController.js)
-
 exports.getUserNotifications = async (req, res, next) => {
   try {
     const userId = req.user._id;
-
-    // Fetch user with notifications
     const user = await User.findById(userId, { notifications: 1 });
 
     if (!user) {
       return next(new createError("User not found", 404));
     }
 
-    // Sort notifications by createdAt (newest first)
     const notifications = user.notifications.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
@@ -439,12 +401,9 @@ exports.getUserNotifications = async (req, res, next) => {
   }
 };
 
-// Mark notifications as read
 exports.markNotificationsAsRead = async (req, res, next) => {
   try {
     const userId = req.user._id;
-
-    // Mark all notifications as read
     await User.findByIdAndUpdate(userId, {
       $set: { "notifications.$[].read": true },
     });
@@ -459,8 +418,6 @@ exports.markNotificationsAsRead = async (req, res, next) => {
   }
 };
 
-//Get Vets by name
-// Get vets by name
 exports.searchVets = async (req, res, next) => {
   try {
     const { name } = req.query;
@@ -480,76 +437,6 @@ exports.searchVets = async (req, res, next) => {
   }
 };
 
-// payment integration
-exports.generateSignature = async (req, res, next) => {
-  try {
-    // Verify authentication
-    if (!req.user) {
-      return next(new createError("Unauthorized: Please login first", 401));
-    }
-
-    const { total_amount, transaction_uuid, product_code } = req.body;
-
-    if (!total_amount || !transaction_uuid || !product_code) {
-      return next(new createError("Missing required fields", 400));
-    }
-
-    const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
-    const secretKey = process.env.ESEWA_SECRET_KEY || "8gBm/:&EnhH.1/q";
-
-    const hash = CryptoJS.HmacSHA256(message, secretKey);
-    const signature = CryptoJS.enc.Base64.stringify(hash);
-
-    res.status(200).json({
-      status: "success",
-      signature,
-    });
-  } catch (error) {
-    next(new createError(error.message, 500));
-  }
-};
-
-exports.verifyPayment = async (req, res, next) => {
-  try {
-    const { appointmentId } = req.params;
-    const { amount, referenceId, status } = req.query;
-
-    if (status !== "COMPLETE") {
-      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
-    }
-
-    // Verify payment with eSewa API
-    const verificationUrl =
-      "https://rc-epay.esewa.com.np/api/epay/transaction/status/";
-    const verificationParams = {
-      product_code: "EPAYTEST",
-      total_amount: amount,
-      transaction_uuid: referenceId,
-    };
-
-    const response = await axios.get(verificationUrl, {
-      params: verificationParams,
-    });
-
-    if (response.data.status === "COMPLETE") {
-      // Update appointment payment status
-      await Appointment.findByIdAndUpdate(appointmentId, {
-        "payment.status": "paid",
-        "payment.transactionId": referenceId,
-        "payment.paidAt": new Date(),
-        "payment.amount": amount,
-      });
-
-      return res.redirect(`/payment/success?appointmentId=${appointmentId}`);
-    } else {
-      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
-    }
-  } catch (error) {
-    next(new createError("Payment verification failed", 500));
-  }
-};
-
-// Cancel appointment (vet)
 exports.cancelVetAppointment = async (req, res, next) => {
   try {
     const appointment = await Appointment.findOne({
@@ -564,16 +451,13 @@ exports.cancelVetAppointment = async (req, res, next) => {
       );
     }
 
-    // Get vet's timezone
     const vet = await User.findById(req.user._id);
     const vetTimezone = vet?.timezone || "UTC";
 
-    // Format appointment time in vet's timezone
     const formattedDate = moment(appointment.dateTime)
       .tz(vetTimezone)
       .format("MMMM Do YYYY, h:mm a");
 
-    // Add notification to the user
     await User.findByIdAndUpdate(appointment.petOwner, {
       $push: {
         notifications: {
@@ -585,7 +469,6 @@ exports.cancelVetAppointment = async (req, res, next) => {
       },
     });
 
-    // Update appointment status
     appointment.status = "cancelled";
     await appointment.save();
 
@@ -596,5 +479,136 @@ exports.cancelVetAppointment = async (req, res, next) => {
   } catch (error) {
     console.error("Error cancelling appointment:", error);
     next(new createError("Failed to cancel appointment", 500));
+  }
+};
+
+exports.initiateKhaltiPayment = async (req, res, next) => {
+  try {
+    const { appointmentId, amount } = req.body;
+
+    if (!appointmentId || !amount) {
+      return next(
+        new createError("Please provide both appointmentId and amount", 400)
+      );
+    }
+
+    // Verify appointment exists and belongs to the user
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return next(new createError("Appointment not found", 404));
+    }
+    if (appointment.petOwner.toString() !== req.user._id.toString()) {
+      return next(
+        new createError("Unauthorized: You do not own this appointment", 403)
+      );
+    }
+
+    const paymentPayload = {
+      return_url: `http://localhost:3000/payment/success?appointmentId=${appointmentId}`,
+      purchase_order_id: appointmentId,
+      purchase_order_name: "Veterinary Appointment",
+      amount: amount * 100,
+      website_url: "http://localhost:3000",
+      customer_info: {
+        name: req.user.name || "Customer",
+        email: req.user.email || "customer@example.com",
+        phone: "9800000000",
+      },
+    };
+
+    console.log("Khalti payment payload:", paymentPayload);
+
+    const response = await axios.post(
+      "https://a.khalti.com/api/v2/epayment/initiate/",
+      paymentPayload,
+      {
+        headers: {
+          Authorization: `key ${process.env.KHALTI_SECRET_KEY ||
+            "3fb3d001f89c4fd7965e13ed9f96c6eb"}`,
+        },
+      }
+    );
+
+    console.log("Khalti initiate response:", response.data);
+
+    res.status(200).json({
+      status: "success",
+      data: response.data,
+    });
+  } catch (error) {
+    console.error("Khalti Payment Error:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    next(new createError("Failed to initiate payment", 500));
+  }
+};
+
+exports.verifyKhaltiPayment = async (req, res, next) => {
+  try {
+    const { appointmentId, pidx } = req.query;
+
+    if (!appointmentId || !pidx) {
+      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      console.error("Appointment not found:", appointmentId);
+      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
+    }
+    if (appointment.petOwner.toString() !== req.user?._id.toString()) {
+      console.error("Unauthorized access for appointment:", appointmentId);
+      return next(
+        new createError("Unauthorized: You do not own this appointment", 403)
+      );
+    }
+
+    console.log("Verifying Khalti payment for:", { appointmentId, pidx });
+
+    const response = await axios.post(
+      "https://a.khalti.com/api/v2/epayment/lookup/",
+      { pidx },
+      {
+        headers: {
+          Authorization: `key ${process.env.KHALTI_SECRET_KEY ||
+            "3fb3d001f89c4fd7965e13ed9f96c6eb"}`,
+        },
+      }
+    );
+
+    console.log("Khalti verification response:", response.data);
+
+    if (response.data.status === "Completed") {
+      console.log("Before payment update:", appointment.payment);
+
+      const updatedAppointment = await Appointment.findByIdAndUpdate(
+        appointmentId,
+        {
+          $set: {
+            "payment.status": "paid",
+            "payment.transactionId": pidx,
+            "payment.paidAt": new Date(),
+            "payment.amount": response.data.total_amount / 100,
+          },
+        },
+        { new: true }
+      );
+
+      console.log("After payment update:", updatedAppointment.payment);
+
+      return res.redirect(`/payment/success?appointmentId=${appointmentId}`);
+    } else {
+      console.log("Payment not completed:", response.data.status);
+      return res.redirect(`/payment/failure?appointmentId=${appointmentId}`);
+    }
+  } catch (error) {
+    console.error("Khalti Verification Error:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    next(new createError("Payment verification failed", 500));
   }
 };

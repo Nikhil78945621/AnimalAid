@@ -1,3 +1,4 @@
+// Components/payment/PaymentFailure.js
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./../../Views/PaymentResult.css";

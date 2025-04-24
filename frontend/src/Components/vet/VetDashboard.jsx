@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-// import VetAppointments from "./VetAppointment"; // Commented out as unused
 import "./../../Views/VetDashboard.css";
 
 const VetDashboard = () => {
-  const [vetData, setVetData] = useState({
-    fee: "",
-    speciality: "",
-    address: "",
-    postalCode: "",
-    clinic: "",
-  });
   const [loading, setLoading] = useState(true);
   const [availability, setAvailability] = useState({
     workingHours: [
@@ -31,41 +23,17 @@ const VetDashboard = () => {
     reason: "",
   });
 
-  // Fetch vet profile and availability
+  // Fetch vet availability
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
-        const profileResponse = await axios.get(
-          "http://localhost:8084/api/auth/profile",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
         const availabilityResponse = await axios.get(
           "http://localhost:8084/api/vet/availability",
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        setVetData({
-          fee: profileResponse.data.data?.fee || profileResponse.data.fee || "",
-          speciality:
-            profileResponse.data.data?.speciality ||
-            profileResponse.data.speciality ||
-            "",
-          address:
-            profileResponse.data.data?.address ||
-            profileResponse.data.address ||
-            "",
-          postalCode:
-            profileResponse.data.data?.postalCode ||
-            profileResponse.data.postalCode ||
-            "",
-          clinic:
-            profileResponse.data.data?.clinic ||
-            profileResponse.data.clinic ||
-            "",
-        });
 
         if (availabilityResponse.data) {
           setAvailability({
@@ -87,26 +55,6 @@ const VetDashboard = () => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Handle updating professional profile
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
-
-      await axios.patch("http://localhost:8084/api/auth/profile", vetData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("Profile updated successfully!");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert(
-        "Failed to update profile: " +
-          (error.response?.data?.message || error.message)
-      );
-    }
-  };
 
   // Handle availability changes
   const handleAvailabilityChange = (index, field, value) => {
@@ -172,81 +120,6 @@ const VetDashboard = () => {
     <div className="vet-dashboard">
       <div className="dashboard-header">
         <h1>Veterinarian Dashboard</h1>
-      </div>
-
-      <div className="profile-section">
-        <h2>Professional Profile</h2>
-        <form onSubmit={handleUpdateProfile}>
-          <div className="form-row">
-            <label>
-              Hourly Fee ($):
-              <input
-                type="number"
-                value={vetData.fee}
-                onChange={(e) =>
-                  setVetData({ ...vetData, fee: e.target.value })
-                }
-                required
-              />
-            </label>
-
-            <label>
-              Speciality:
-              <input
-                type="text"
-                value={vetData.speciality}
-                onChange={(e) =>
-                  setVetData({ ...vetData, speciality: e.target.value })
-                }
-                required
-              />
-            </label>
-          </div>
-
-          <div className="form-row">
-            <label>
-              Clinic Address:
-              <input
-                type="text"
-                value={vetData.address}
-                onChange={(e) =>
-                  setVetData({ ...vetData, address: e.target.value })
-                }
-                required
-              />
-            </label>
-
-            <label>
-              Postal Code:
-              <input
-                type="text"
-                value={vetData.postalCode}
-                onChange={(e) =>
-                  setVetData({ ...vetData, postalCode: e.target.value })
-                }
-                required
-                placeholder="e.g., 44600"
-              />
-            </label>
-          </div>
-
-          <div className="form-row">
-            <label>
-              Clinic Name:
-              <input
-                type="text"
-                value={vetData.clinic}
-                onChange={(e) =>
-                  setVetData({ ...vetData, clinic: e.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <button type="submit" className="update-btn">
-            Update Profile
-          </button>
-        </form>
       </div>
 
       <div className="availability-section">

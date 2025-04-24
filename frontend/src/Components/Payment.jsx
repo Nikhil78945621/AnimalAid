@@ -1,153 +1,123 @@
 import React, { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import CryptoJS from "crypto-js";
 
 const Payment = () => {
   const [formData, setFormData] = useState({
-    amount: "10",
+    amount: "100",
     tax_amount: "0",
-    total_amount: "10",
-    transaction_uuid: uuidv4(),
+    total_amount: "100",
+    transaction_uuid: "",
+    product_code: "EPAYTEST",
     product_service_charge: "0",
     product_delivery_charge: "0",
-    product_code: "EPAYTEST",
-    success_url: "http://localhost:3000/payment/success",
-    failed_url: "http://localhost:3000/paymentfailed",
+    success_url: "https://google.com",
+    failure_url: "https://facebook.com",
     signed_field_names: "total_amount,transaction_uuid,product_code",
     signature: "",
     secret: "8gBm/:&EnhH.1/q",
   });
 
-  const generateSignature = (
-    total_amount,
-    transaction_uuid,
-    product_code,
-    secret
-  ) => {
-    const hashString = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
-    const hash = CryptoJS.HmacSHA256(hashString, secret);
-    const hashedSignature = CryptoJS.enc.Base64.stringify(hash);
-    return hashedSignature;
+  // Generate transaction UUID and signature on component load and whenever inputs change
+  useEffect(() => {
+    const generateUUID = () => {
+      const now = new Date();
+      const uuid =
+        now
+          .toISOString()
+          .slice(2, 10)
+          .replace(/-/g, "") +
+        "-" +
+        now
+          .getHours()
+          .toString()
+          .padStart(2, "0") +
+        now
+          .getMinutes()
+          .toString()
+          .padStart(2, "0") +
+        now
+          .getSeconds()
+          .toString()
+          .padStart(2, "0");
+      return uuid;
+    };
+
+    const generateSignature = () => {
+      const { total_amount, product_code, secret } = formData;
+      const transaction_uuid = generateUUID();
+
+      const dataToSign = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
+      const hash = CryptoJS.HmacSHA256(dataToSign, secret);
+      const hashInBase64 = CryptoJS.enc.Base64.stringify(hash);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        transaction_uuid,
+        signature: hashInBase64,
+      }));
+    };
+
+    generateSignature();
+  }, [formData.total_amount, formData.product_code, formData.secret]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  useEffect(() => {
-    const { total_amount, transaction_uuid, product_code, secret } = formData;
-    const hashedSignature = generateSignature(
-      total_amount,
-      transaction_uuid,
-      product_code,
-      secret
-    );
-    setFormData({ ...formData, signature: hashedSignature });
-  }, [formData.amount]);
-
   return (
-    <div>
-      <h2>eSewa Payment</h2>
-      <form
-        action="https://rc-epay.esewa.com.np/api/epay/main/v2/form"
-        method="POST"
+    <form
+      action="https://rc-epay.esewa.com.np/api/epay/main/v2/form"
+      method="POST"
+      target="_blank"
+    >
+      <h2>eSewa Payment Form</h2>
+
+      {Object.entries(formData).map(([key, value]) => {
+        if (key === "secret") return null; // don't submit secret
+        return (
+          <div key={key}>
+            <label>{key.replace(/_/g, " ")}:</label>
+            <input
+              type="text"
+              name={key}
+              value={value}
+              onChange={handleChange}
+              required
+              readOnly={key === "signature" || key === "transaction_uuid"}
+            />
+          </div>
+        );
+      })}
+
+      {/* Include secret input for local use (not submitted to eSewa) */}
+      <div>
+        <label>Secret Key (Local Use Only):</label>
+        <input
+          type="text"
+          name="secret"
+          value={formData.secret}
+          onChange={handleChange}
+        />
+      </div>
+
+      <button
+        type="submit"
+        style={{
+          backgroundColor: "#60bb46",
+          color: "white",
+          border: "none",
+          padding: "10px 20px",
+          cursor: "pointer",
+          marginTop: "10px",
+        }}
       >
-        <div className="field">
-          <label htmlFor="">Amount</label>
-
-          <input
-            type="text"
-            name="amount"
-            value={formData.amount}
-            onChange={({ target }) =>
-              setFormData({
-                ...formData,
-                amount: target.value,
-                total_amount: target.value,
-              })
-            }
-            required
-          />
-        </div>
-        <input
-          type="hidden"
-          name="tax_amount"
-          value={formData.tax_amount}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="total_amount"
-          value={formData.total_amount}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="transaction_uuid"
-          value={formData.transaction_uuid}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="product_code"
-          value={formData.product_code}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="product_service_charge"
-          value={formData.product_service_charge}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="product_delivery_charge"
-          value={formData.product_delivery_charge}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="success_url"
-          value={formData.success_url}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="failure_url"
-          value={formData.failed_url}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="signed_field_names"
-          value={formData.signed_field_names}
-          readOnly
-          required
-        />
-        <input
-          type="hidden"
-          name="signature"
-          value={formData.signature}
-          readOnly
-          required
-        />
-
-        <div className="field">
-          <label htmlFor="">FirstName</label>
-          <input type="text" />
-        </div>
-
-        <div className="field">
-          <label htmlFor="">LastName</label>
-          <input type="text" />
-        </div>
-        <input type="submit" value="Pay with eSewa" />
-      </form>
-    </div>
+        Pay with eSewa
+      </button>
+    </form>
   );
 };
 

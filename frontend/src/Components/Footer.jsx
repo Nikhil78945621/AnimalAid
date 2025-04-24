@@ -68,7 +68,7 @@ const Footer = () => {
           <div className="section-divider"></div>
           <ul>
             <li>
-              <Link to="/services/pet-care">Pet Care</Link>
+              <Link to="/services/Eye Care">Eye Care</Link>
             </li>
             <li>
               <Link to="/services/livestock">Livestock</Link>

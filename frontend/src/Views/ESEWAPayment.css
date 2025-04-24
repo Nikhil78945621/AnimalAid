@@ -1,61 +1,60 @@
-.esewa-container {
+.khalti-container {
   max-width: 600px;
-  margin: 10rem auto;
+  margin: 100px auto;
   padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
 }
 
-.esewa-container h2 {
-  color: #2c3e50;
-  text-align: center;
+.khalti-container h2 {
+  color: #5a2a83;
   margin-bottom: 1.5rem;
 }
 
 .payment-summary {
-  background-color: #f8f9fa;
+  background-color: #ffffff;
+  border-radius: 8px;
   padding: 1.5rem;
-  border-radius: 6px;
-  margin-bottom: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: left;
 }
 
 .payment-summary h3 {
-  margin-top: 0;
-  color: #2c3e50;
+  color: #333;
+  margin-bottom: 1rem;
 }
 
-.esewa-form {
-  display: flex;
-  justify-content: center;
+.payment-summary p {
+  margin: 0.5rem 0;
+  color: #555;
 }
 
-.esewa-button {
-  background-color: #53c41a;
+.khalti-button {
+  background-color: #5a2a83;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
-.esewa-button:hover {
-  background-color: #3e9c12;
-}
-
-.loading {
-  text-align: center;
-  padding: 1rem;
-  color: #2c3e50;
+.khalti-button:hover {
+  background-color: #4a2270;
 }
 
 .error-message {
-  color: #e74c3c;
-  background-color: #fdecea;
-  padding: 1rem;
-  border-radius: 4px;
+  color: #e63946;
   margin-bottom: 1rem;
-  text-align: center;
+  font-weight: 500;
+}
+
+.loading {
+  color: #555;
+  font-style: italic;
 }

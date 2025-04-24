@@ -75,16 +75,26 @@ router.patch(
   appointmentController.markNotificationsAsRead
 );
 
+// router.post(
+//   "/payment/generate-signature",
+//   protect,
+//   appointmentController.generateSignature
+// );
+// router.get(
+//   "/payment/verify/:appointmentId",
+//   appointmentController.verifyPayment
+// );
+
 router.post(
-  "/payment/generate-signature",
+  "/payment/khalti-initiate",
   protect,
-  appointmentController.generateSignature
+  appointmentController.initiateKhaltiPayment
 );
 router.get(
-  "/payment/verify/:appointmentId",
-  appointmentController.verifyPayment
+  "/payment/khalti-verify",
+  protect,
+  appointmentController.verifyKhaltiPayment
 );
-
 router.get("/vets/search", appointmentController.searchVets);
 
 module.exports = router;
