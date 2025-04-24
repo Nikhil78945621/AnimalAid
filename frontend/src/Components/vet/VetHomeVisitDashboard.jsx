@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import L from "leaflet";
 import "./../../Views/VetHomeVisitDashboard.css";
 
 const VetHomeVisitDashboard = () => {
@@ -26,14 +27,6 @@ const VetHomeVisitDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("Fetched requests (Vet Dashboard):", response.data.data);
-      response.data.data.forEach((req) => {
-        if (req.distance === null || req.distance === undefined) {
-          console.warn(
-            `Request ${req._id} has invalid distance: ${req.distance}`
-          );
-        }
-      });
       setRequests(response.data.data);
       if (mapRef.current) {
         mapRef.current.invalidateSize();
@@ -48,7 +41,7 @@ const VetHomeVisitDashboard = () => {
       } else {
         setError(
           error.response?.data?.message ||
-            "Failed to load requests. Please try again or check server status."
+            "Failed to load requests. Please try again later."
         );
       }
     } finally {
@@ -58,7 +51,6 @@ const VetHomeVisitDashboard = () => {
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      console.log("WebSocket already connected (Vet), skipping reconnect");
       return;
     }
 
@@ -66,51 +58,31 @@ const VetHomeVisitDashboard = () => {
     wsRef.current = websocket;
 
     websocket.onopen = () => {
-      console.log("WebSocket connected (Vet)");
       retryCountRef.current = 0;
     };
 
     websocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log("WebSocket message received (Vet):", data);
-      switch (data.type) {
-        case "NEW_REQUEST":
-        case "REQUEST_UPDATED":
-          console.log("Fetching updated requests due to:", data.type);
-          fetchRequests();
-          break;
-        default:
-          break;
+      if (["NEW_REQUEST", "REQUEST_UPDATED"].includes(data.type)) {
+        fetchRequests();
       }
     };
 
     websocket.onerror = (error) => {
-      console.error("WebSocket error (Vet):", error);
+      console.error("WebSocket error:", error);
     };
 
     websocket.onclose = () => {
-      console.log("WebSocket disconnected (Vet)");
       wsRef.current = null;
       const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 16000);
       retryCountRef.current += 1;
-      console.log(
-        `Reconnecting in ${delay / 1000} seconds... (Attempt ${
-          retryCountRef.current
-        })`
-      );
       setTimeout(connectWebSocket, delay);
     };
   }, [fetchRequests]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const decodedToken = jwtDecode(token);
-    if (decodedToken.exp * 1000 < Date.now()) {
+    if (!token || jwtDecode(token).exp * 1000 < Date.now()) {
       localStorage.removeItem("token");
       navigate("/login");
       return;
@@ -120,11 +92,8 @@ const VetHomeVisitDashboard = () => {
     fetchRequests();
 
     return () => {
-      if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
-        wsRef.current.onclose = null;
-      } else if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close();
-        console.log("WebSocket closed on unmount (Vet)");
       }
     };
   }, [navigate, connectWebSocket, fetchRequests]);
@@ -137,25 +106,19 @@ const VetHomeVisitDashboard = () => {
     }
 
     setLoading(true);
-    setError("");
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.patch(
+      await axios.patch(
         `http://localhost:8084/api/home-visits/${id}/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Accept request response:", response.data);
       fetchRequests();
       alert("Request accepted successfully! Check the Vet Chat page.");
     } catch (error) {
-      console.error(
-        "Error accepting request:",
-        error.response?.data || error.message
-      );
       alert(
         error.response?.data?.message ||
-          "Failed to accept request. Please try again or check server status."
+          "Failed to accept request. Please try again."
       );
     } finally {
       setLoading(false);
@@ -173,9 +136,7 @@ const VetHomeVisitDashboard = () => {
             center={[27.7172, 85.324]}
             zoom={7}
             style={{ height: "100%", width: "100%" }}
-            whenCreated={(map) => {
-              mapRef.current = map;
-            }}
+            whenCreated={(map) => (mapRef.current = map)}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -183,41 +144,39 @@ const VetHomeVisitDashboard = () => {
             />
             {requests
               .filter(
-                (request) =>
-                  request.status === "pending" &&
-                  request.isEligible &&
-                  typeof request.distance === "number" &&
-                  request.distance <= 100
+                (r) =>
+                  r.status === "pending" &&
+                  r.isEligible &&
+                  typeof r.distance === "number" &&
+                  r.distance <= 100 &&
+                  r.location?.coordinates?.length === 2 &&
+                  !isNaN(r.location.coordinates[0]) &&
+                  !isNaN(r.location.coordinates[1])
               )
-              .map((request) => (
+              .map((r) => (
                 <Marker
-                  key={request._id}
+                  key={r._id}
                   position={[
-                    request.location.coordinates[1],
-                    request.location.coordinates[0],
+                    r.location.coordinates[1],
+                    r.location.coordinates[0],
                   ]}
+                  icon={L.icon({
+                    iconUrl:
+                      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                  })}
                 >
                   <Popup>
-                    <h3>{request.petType}</h3>
-                    <p>Priority: {request.priority}</p>
-                    <p>{request.description}</p>
-                    <p>
-                      Distance:{" "}
-                      {typeof request.distance === "number"
-                        ? request.distance.toFixed(2)
-                        : "Calculating..."}{" "}
-                      km
-                    </p>
-                    <p>
-                      ETA:{" "}
-                      {typeof request.eta === "number" && request.eta > 0
-                        ? request.eta
-                        : "N/A"}{" "}
-                      minutes
-                    </p>
-                    <p>Status: {request.status}</p>
+                    <h3>{r.petType}</h3>
+                    <p>Priority: {r.priority}</p>
+                    <p>{r.description}</p>
+                    <p>Distance: {r.distance.toFixed(2)} km</p>
+                    <p>ETA: {r.eta || "N/A"} minutes</p>
+                    <p>Status: {r.status}</p>
                     <button
-                      onClick={() => handleAccept(request._id)}
+                      onClick={() => handleAccept(r._id)}
                       style={{ padding: "5px 10px", marginTop: "10px" }}
                       disabled={loading}
                     >
@@ -235,38 +194,32 @@ const VetHomeVisitDashboard = () => {
           {requests.length === 0 && !loading ? (
             <p>No requests available within 100 km.</p>
           ) : (
-            requests.map((request) => (
+            requests.map((r) => (
               <div
-                key={request._id}
+                key={r._id}
                 className="request-item"
                 style={{ padding: "10px", borderBottom: "1px solid #ccc" }}
               >
                 <h4>
-                  {request.petType} - {request.priority}
+                  {r.petType} - {r.priority}
                 </h4>
                 <p>
                   Distance:{" "}
-                  {typeof request.distance === "number"
-                    ? request.distance.toFixed(2)
-                    : "Calculating..."}{" "}
+                  {typeof r.distance === "number"
+                    ? r.distance.toFixed(2)
+                    : "N/A"}{" "}
                   km
                 </p>
-                <p>
-                  ETA:{" "}
-                  {typeof request.eta === "number" && request.eta > 0
-                    ? request.eta
-                    : "N/A"}{" "}
-                  minutes
-                </p>
-                <p>Status: {request.status}</p>
-                {request.status === "accepted" && (
+                <p>ETA: {r.eta || "N/A"} minutes</p>
+                <p>Status: {r.status}</p>
+                {r.status === "accepted" && (
                   <p>
-                    Chat available on the <a href="/vet-chat">Vet Chat page</a>.
+                    Chat available on <a href="/vet-chat">Vet Chat page</a>.
                   </p>
                 )}
-                {request.status === "pending" && (
+                {r.status === "pending" && (
                   <button
-                    onClick={() => handleAccept(request._id)}
+                    onClick={() => handleAccept(r._id)}
                     style={{ padding: "5px 10px", marginTop: "10px" }}
                     disabled={loading}
                   >

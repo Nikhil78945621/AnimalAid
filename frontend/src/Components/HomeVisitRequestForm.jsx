@@ -1,14 +1,24 @@
 import React, { useState, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import axios from "axios";
 import "./../Views/homevisit.css";
+import locationImg from "./../assets/location.png"; // Make sure this path is correct
 
-// Utility function for delay with jitter
+// Define custom icon
+const locationIcon = new L.Icon({
+  iconUrl: locationImg,
+  iconSize: [30, 40],
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -40],
+});
+
+// Delay utility
 const delay = (ms) =>
   new Promise((resolve) => setTimeout(resolve, ms + Math.random() * 100));
 
-// MapClickHandler component
+// Map click handler
 const MapClickHandler = ({ onLocationSelect }) => {
   useMapEvents({
     click(e) {
@@ -37,7 +47,9 @@ const HomeVisitRequestForm = () => {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&countrycodes=NP`,
             {
-              headers: { "User-Agent": "VetApp/1.0 (your.email@example.com)" },
+              headers: {
+                "User-Agent": "VetApp/1.0 (your.email@example.com)",
+              },
             }
           );
           if (!response.ok)
@@ -196,7 +208,7 @@ const HomeVisitRequestForm = () => {
               attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
             <MapClickHandler onLocationSelect={handleMapClick} />
-            {position && <Marker position={position} />}
+            {position && <Marker position={position} icon={locationIcon} />}
           </MapContainer>
           <p>
             Selected Address:{" "}
