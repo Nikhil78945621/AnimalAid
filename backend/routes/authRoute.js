@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
-router.get("/logout", authController.logout); // Ensure logout is defined
+router.get("/logout", authController.logout);
 router.get("/profile", protect, authController.getProfile);
 router.patch("/profile", protect, authController.updateProfile);
 

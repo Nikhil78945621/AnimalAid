@@ -134,7 +134,7 @@ const Navbar = ({ isAuthenticated, userRole, theme, toggleTheme }) => {
           <li className="dropdown">
             <span className="dropdown-toggle">Appointments</span>
             <div className="dropdown-content">
-              <Link to="/appointments">My Appointments</Link>
+              <Link to="/appointments">Appointments</Link>
               <Link to="/appointments/new">Book Appointment</Link>
             </div>
           </li>

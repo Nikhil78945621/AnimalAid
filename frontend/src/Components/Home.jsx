@@ -107,7 +107,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1>Welcome to Animal Healthcare</h1>
+          <h1>Welcome to Animal Aid</h1>
           <p>
             Providing the best healthcare solutions for your pets and livestock.
           </p>

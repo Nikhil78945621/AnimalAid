@@ -211,7 +211,7 @@ const ProfileModal = ({ show, onClose }) => {
               </div>
             ) : (
               <div className="profile-details">
-                <h2>My Profile</h2>
+                <h2>Personal Details</h2>
                 <div className="profile-field">
                   <strong>Name:</strong> {profile.name || "N/A"}
                 </div>
