@@ -22,7 +22,7 @@ const VetHomeVisitDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:8084/api/home-visits/vet",
+        "https://animalaid-9duz.onrender.com/api/home-visits/vet",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -109,7 +109,7 @@ const VetHomeVisitDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:8084/api/home-visits/${id}/accept`,
+        `https://animalaid-9duz.onrender.com/api/home-visits/${id}/accept`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
