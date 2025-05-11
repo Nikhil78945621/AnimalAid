@@ -59,7 +59,7 @@ const UserHomeVisitRequests = () => {
       return;
     }
 
-    const websocket = new WebSocket("ws://localhost:8084");
+    const websocket = new WebSocket("ws://animalaid-9duz.onrender.com");
     wsRef.current = websocket;
 
     websocket.onopen = () => {
