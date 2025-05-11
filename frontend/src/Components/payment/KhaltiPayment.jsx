@@ -24,7 +24,7 @@ function KhaltiPayment() {
       }
 
       const response = await axios.post(
-        "http://localhost:8084/api/appointments/payment/khalti-initiate",
+        "https://animalaid-9duz.onrender.com/api/appointments/payment/khalti-initiate",
         {
           appointmentId: appointment?._id,
           amount: appointment?.veterinarian.fee,
