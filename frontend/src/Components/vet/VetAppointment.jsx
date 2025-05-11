@@ -28,7 +28,7 @@ const VetAppointments = ({ stats, setStats }) => {
 
       try {
         const response = await axios.get(
-          "http://localhost:8084/api/appointments/vet",
+          "https://animalaid-9duz.onrender.com/api/appointments/vet",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -66,14 +66,14 @@ const VetAppointments = ({ stats, setStats }) => {
 
     try {
       await axios.patch(
-        `http://localhost:8084/api/appointments/${id}/${action}`,
+        `https://animalaid-9duz.onrender.com/api/appointments/${id}/${action}`,
         null,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       // Refresh appointments list
       const appointmentsResponse = await axios.get(
-        "http://localhost:8084/api/appointments/vet",
+        "https://animalaid-9duz.onrender.com/api/appointments/vet",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAppointments(appointmentsResponse.data.data);
@@ -81,7 +81,7 @@ const VetAppointments = ({ stats, setStats }) => {
       // Refresh stats
       if (setStats) {
         const statsResponse = await axios.get(
-          "http://localhost:8084/api/appointments/vet/stats",
+          "https://animalaid-9duz.onrender.com/api/appointments/vet/stats",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setStats({
