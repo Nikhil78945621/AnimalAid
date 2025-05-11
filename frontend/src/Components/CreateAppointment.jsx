@@ -38,7 +38,7 @@ const CreateAppointment = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:8084/api/appointments/vets",
+          "https://animalaid-9duz.onrender.com/api/appointments/vets",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ const CreateAppointment = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:8084/api/appointments/available?vetId=${selectedVet}&date=${selectedDate}`,
+          `https://animalaid-9duz.onrender.com/api/appointments/available?vetId=${selectedVet}&date=${selectedDate}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ const CreateAppointment = () => {
         .utc()
         .format();
       await axios.post(
-        "http://localhost:8084/api/appointments",
+        "https://animalaid-9duz.onrender.com/api/appointments",
         {
           veterinarian: selectedVet,
           pet,
