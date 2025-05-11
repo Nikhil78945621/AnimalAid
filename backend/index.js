@@ -52,7 +52,7 @@ app.use((err, req, res, next) => {
 });
 
 // HTTP Server
-const PORT = 8084;
+const PORT = process.env.PORT || 8084;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
