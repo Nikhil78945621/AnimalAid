@@ -18,7 +18,7 @@ const Login = ({ setIsAuthenticated }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8084/api/auth/login",
+        "https://animalaid-9duz.onrender.com/api/auth/login",
         { email, password }
       );
 
