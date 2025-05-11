@@ -31,7 +31,7 @@ const VetDashboard = () => {
         if (!token) throw new Error("No token found");
 
         const availabilityResponse = await axios.get(
-          "http://localhost:8084/api/vet/availability",
+          "https://localhost:8084/api/vet/availability",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -71,7 +71,7 @@ const VetDashboard = () => {
       if (!token) throw new Error("No token found");
 
       await axios.put(
-        "http://localhost:8084/api/vet/availability",
+        "https://localhost:8084/api/vet/availability",
         {
           workingHours: availability.workingHours,
           appointmentDuration: availability.appointmentDuration,
@@ -97,7 +97,7 @@ const VetDashboard = () => {
       if (!token) throw new Error("No token found");
 
       await axios.post(
-        "http://localhost:8084/api/vet/block-slot",
+        "https://localhost:8084/api/vet/block-slot",
         blockSlotData,
         {
           headers: { Authorization: `Bearer ${token}` },
