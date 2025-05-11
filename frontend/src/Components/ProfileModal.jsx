@@ -24,7 +24,7 @@ const ProfileModal = ({ show, onClose }) => {
       setError("");
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:8084/api/auth/profile",
+        "https://animalaid-9duz.onrender.com/api/auth/profile",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -64,7 +64,7 @@ const ProfileModal = ({ show, onClose }) => {
       setLoading(true);
       setUpdateMessage("");
       const token = localStorage.getItem("token");
-      await axios.patch("http://localhost:8084/api/auth/profile", formData, {
+      await axios.patch("https://animalaid-9duz.onrender.com/api/auth/profile", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUpdateMessage("Profile updated successfully!");
