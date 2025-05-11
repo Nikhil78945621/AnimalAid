@@ -20,7 +20,7 @@ const VetChat = () => {
     }
     try {
       const response = await axios.get(
-        "https://localhost:8084com/api/home-visits/vet",
+        "http://localhost:8084/api/home-visits/vet",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -60,7 +60,7 @@ const VetChat = () => {
 
     try {
       const response = await axios.post(
-        "https://localhost:8084com/api/home-visits/send-message",
+        "http://localhost:8084/api/home-visits/send-message",
         {
           requestId,
           message: `Vet: ${newMessage}`,

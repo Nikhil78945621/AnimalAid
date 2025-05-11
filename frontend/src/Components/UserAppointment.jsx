@@ -98,7 +98,7 @@ const UserAppointments = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.patch(
-        `https://localhost:8084/api/appointments/${appointmentId}/reschedule`,
+        `http://localhost:8084/api/appointments/${appointmentId}/reschedule`,
         { newDateTime },
         {
           headers: { Authorization: `Bearer ${token}` },

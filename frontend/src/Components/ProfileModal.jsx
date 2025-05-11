@@ -24,7 +24,7 @@ const ProfileModal = ({ show, onClose }) => {
       setError("");
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://localhost:8084/api/auth/profile",
+        "http://localhost:8084/api/auth/profile",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

@@ -13,7 +13,7 @@ const ServiceApproval = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "https://localhost:8084/api/services/admin/pending",
+          "http://localhost:8084/api/services/admin/pending",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ const ServiceApproval = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `https://localhost:8084/api/services/admin/${id}/approve`,
+        `http://localhost:8084/api/services/admin/${id}/approve`,
         { feedback },
         {
           headers: {
@@ -60,7 +60,7 @@ const ServiceApproval = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `https://localhost:8084/api/services/admin/${id}/reject`,
+        `http://localhost:8084/api/services/admin/${id}/reject`,
         { feedback },
         {
           headers: {
@@ -107,7 +107,7 @@ const ServiceApproval = () => {
               <div className="service-content">
                 {service.image && (
                   <img
-                    src={`https://localhost:8084/${service.image.replace(
+                    src={`http://localhost:8084/${service.image.replace(
                       /\\/g,
                       "/"
                     )}`}
