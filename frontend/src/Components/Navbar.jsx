@@ -31,7 +31,7 @@ const Navbar = ({ isAuthenticated, userRole, theme, toggleTheme }) => {
         try {
           const token = localStorage.getItem("token");
           const response = await axios.get(
-            `http://localhost:8084/api/appointments/vets/search?name=${encodeURIComponent(
+            ` https://animalaid-9duz.onrender.com/api/appointments/vets/search?name=${encodeURIComponent(
               searchQuery
             )}`,
             {
@@ -74,7 +74,7 @@ const Navbar = ({ isAuthenticated, userRole, theme, toggleTheme }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:8084/api/appointments/notifications",
+        " https://animalaid-9duz.onrender.com/api/appointments/notifications",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -89,7 +89,7 @@ const Navbar = ({ isAuthenticated, userRole, theme, toggleTheme }) => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        "http://localhost:8084/api/appointments/notifications/mark-read",
+        " https://animalaid-9duz.onrender.com/api/appointments/notifications/mark-read",
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
