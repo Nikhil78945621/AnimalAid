@@ -30,13 +30,13 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const [usersRes, statsRes, applicationsRes] = await Promise.all([
-        axios.get("http://localhost:8084/api/admin/users", {
+        axios.get("https://animalaid-9duz.onrender.com/api/admin/users", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:8084/api/admin/dashboard", {
+        axios.get("https://animalaid-9duz.onrender.com/api/admin/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:8084/api/vet-applications/pending", {
+        axios.get("https://animalaid-9duz.onrender.com/api/vet-applications/pending", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -56,7 +56,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:8084/api/admin/users/${userId}/role`,
+        `https://animalaid-9duz.onrender.com/api/admin/users/${userId}/role`,
         { role: newRole },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8084/api/admin/users/${userId}`, {
+      await axios.delete(`https://animalaid-9duz.onrender.com/api/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchData(); // Refresh data after deletion
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        "http://localhost:8084/api/vet-applications/review",
+        "https://animalaid-9duz.onrender.com/api/vet-applications/review",
         { applicationId, status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
