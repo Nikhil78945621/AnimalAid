@@ -13,7 +13,7 @@ const ServiceApproval = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:8084/api/services/admin/pending",
+          "https://animalaid-9duz.onrender.com/api/services/admin/pending",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ const ServiceApproval = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:8084/api/services/admin/${id}/approve`,
+        `https://animalaid-9duz.onrender.com/api/services/admin/${id}/approve`,
         { feedback },
         {
           headers: {
@@ -60,7 +60,7 @@ const ServiceApproval = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:8084/api/services/admin/${id}/reject`,
+        `https://animalaid-9duz.onrender.com/api/services/admin/${id}/reject`,
         { feedback },
         {
           headers: {
@@ -107,7 +107,7 @@ const ServiceApproval = () => {
               <div className="service-content">
                 {service.image && (
                   <img
-                    src={`http://localhost:8084/${service.image.replace(
+                    src={`https://animalaid-9duz.onrender.com/${service.image.replace(
                       /\\/g,
                       "/"
                     )}`}
