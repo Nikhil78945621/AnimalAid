@@ -20,7 +20,7 @@ const UserHomeVisitRequests = () => {
     }
     try {
       const response = await axios.get(
-        "http://localhost:8084/api/home-visits/user",
+        "https://animalaid-9duz.onrender.com/api/home-visits/user",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -123,7 +123,7 @@ const UserHomeVisitRequests = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8084/api/home-visits/send-message",
+        "https://animalaid-9duz.onrender.com/api/home-visits/send-message",
         payload,
         {
           headers: {
@@ -157,7 +157,7 @@ const UserHomeVisitRequests = () => {
     if (window.confirm("Are you sure you want to cancel this request?")) {
       try {
         const response = await axios.patch(
-          `http://localhost:8084/api/home-visits/${requestId}/cancel`,
+          `https://animalaid-9duz.onrender.com/api/home-visits/${requestId}/cancel`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
