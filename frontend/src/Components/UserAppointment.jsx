@@ -21,7 +21,7 @@ const UserAppointments = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:8084/api/appointments/user",
+        "https://animalaid-9duz.onrender.com/api/appointments/user",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -48,7 +48,7 @@ const UserAppointments = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:8084/api/appointments/${id}/cancel`,
+        `https://animalaid-9duz.onrender.com/api/appointments/${id}/cancel`,
         null,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -72,7 +72,7 @@ const UserAppointments = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:8084/api/appointments/available?vetId=${
+        `https://animalaid-9duz.onrender.com/api/appointments/available?vetId=${
           appointment.veterinarian._id
         }&date=${new Date(appointment.dateTime).toISOString().split("T")[0]}`,
         {
@@ -98,7 +98,7 @@ const UserAppointments = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.patch(
-        `http://localhost:8084/api/appointments/${appointmentId}/reschedule`,
+        `https://animalaid-9duz.onrender.com/api/appointments/${appointmentId}/reschedule`,
         { newDateTime },
         {
           headers: { Authorization: `Bearer ${token}` },
