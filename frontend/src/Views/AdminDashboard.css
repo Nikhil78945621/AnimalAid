@@ -85,3 +85,86 @@
   padding: 2rem;
   font-size: 1.2rem;
 }
+/* Vet Applications Container */
+.applications-table-container {
+  background-color: #ffffff;
+  padding: 2rem;
+  margin-top: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.applications-table-container h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+/* Applications Table */
+.applications-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.applications-table th,
+.applications-table td {
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.applications-table th {
+  background-color: #f7f7f7;
+  font-weight: bold;
+  color: #444;
+}
+
+.applications-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.approve-btn,
+.reject-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  margin-right: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.approve-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.approve-btn:hover {
+  background-color: #45a049;
+}
+
+.reject-btn:hover {
+  background-color: #e53935;
+}
+
+/* Responsive table for small screens */
+@media (max-width: 768px) {
+  .applications-table-container {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .applications-table {
+    font-size: 0.85rem;
+  }
+
+  .applications-table th,
+  .applications-table td {
+    padding: 10px 12px;
+  }
+}
